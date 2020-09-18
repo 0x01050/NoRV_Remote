@@ -3,16 +3,20 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.github.teocci.android.rtmpplayer"
-        minSdkVersion 16
+        applicationId "com.norv.player"
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
+        debug {
+            buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live\""
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
         }
     }
 }

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto" >
     <item
         android:id="@+id/search"
-        android:icon="@android:drawable/ic_dialog_info"
+        android:icon="@drawable/icon_shield"
         android:title="..."
         app:showAsAction="always" />
 </menu>

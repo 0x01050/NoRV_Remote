@@ -20,9 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".NoRVSettings"
-            android:label="@string/title_norv_settings" />
         <service
             android:name=".NoRVRTMP"
             android:enabled="true"

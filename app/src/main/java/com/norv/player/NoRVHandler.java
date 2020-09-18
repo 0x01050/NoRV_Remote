@@ -1,19 +1,18 @@
 package com.norv.player;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-public class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+public class NoRVHandler implements Thread.UncaughtExceptionHandler {
     private Context context;
-    public ExceptionHandler(Context a) {
+    public NoRVHandler(Context a) {
         context = a;
     }
     @Override
     public void uncaughtException(Thread thread, Throwable ex) {
-        Intent intent = new Intent(context, MainActivity.class);
+        Intent intent = new Intent(context, NoRVActivity.class);
         intent.putExtra("crash", true);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK

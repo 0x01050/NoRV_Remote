@@ -2,21 +2,19 @@ package com.norv.player;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.google.android.exoplayer2.C;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -36,13 +34,13 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
-public class FloatingViewService extends Service {
+public class NoRVRTMP extends Service {
     private WindowManager mWindowManager;
     private View mFloatingView;
     private static int LEFTMOST = -100000;
     private static int RIGHTMOST = 100000;
 
-    public FloatingViewService() { }
+    public NoRVRTMP() { }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -50,19 +48,13 @@ public class FloatingViewService extends Service {
     }
 
 
-    public static int convertDpToPixel(float dp){
-        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-        float px = dp * (metrics.densityDpi / 160f);
-        return Math.round(px);
-    }
-
     @Override
     public void onCreate() {
         Log.e("NoRV", "Service started");
         super.onCreate();
 
         try {
-            mFloatingView = LayoutInflater.from(this).inflate(R.layout.floating_main, null);
+            mFloatingView = LayoutInflater.from(this).inflate(R.layout.norv_rtmp, null);
 
             final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -138,7 +130,7 @@ public class FloatingViewService extends Service {
             RtmpDataSourceFactory rtmpDataSourceFactory = new RtmpDataSourceFactory();
             final ExtractorMediaSource videoSource = new ExtractorMediaSource
                     .Factory(rtmpDataSourceFactory)
-                    .createMediaSource(Uri.parse(BuildConfig.RTMP_SERVER));
+                    .createMediaSource(Uri.parse(PreferenceManager.getDefaultSharedPreferences(this).getString("streaming_server", BuildConfig.RTMP_SERVER)));
             player.prepare(videoSource);
             player.setPlayWhenReady(true);
 
@@ -162,7 +154,7 @@ public class FloatingViewService extends Service {
 
                 @Override
                 public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                    if (playWhenReady == false) {
+                    if (!playWhenReady) {
                         player.setPlayWhenReady(true);
                     } else if (playbackState == Player.STATE_ENDED) {
                         player.stop();

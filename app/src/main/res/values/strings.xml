@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">NoRV Player</string>
+    <string name="title_norv_activity">NoRV Player</string>
+    <string name="title_norv_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="streaming_header">Streaming</string>
+    <string name="perm_header">Permission</string>
+
+    <!-- Streaming Preferences -->
+    <string name="server_title">Server</string>
+    <string name="width_title">Width</string>
+    <string name="height_title">Height</string>
+
+    <!-- Permission Preferences -->
+    <string name="overlay_title">System Drawing Overlay</string>
+    <string name="overlay_enabled">Alert Window Permission is granted</string>
+    <string name="overlay_disabled">You need System Alert Window Permission</string>
 </resources>

@@ -9,7 +9,7 @@ public class NoRVApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(getApplicationContext()));
+        Thread.setDefaultUncaughtExceptionHandler(new NoRVHandler(getApplicationContext()));
     }
     @Override
     public Context getApplicationContext() {

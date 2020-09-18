@@ -1,31 +1,37 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 30
     defaultConfig {
         applicationId "com.norv.player"
         minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
     }
     buildTypes {
         debug {
             buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live\""
-        }
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
-        }
+            resValue "string", "RTMP_SERVER", "rtmp://192.168.108.75/live"
     }
+    release {
+        minifyEnabled false
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
+        resValue "string", "RTMP_SERVER", "rtmp://192.168.1.5/live"
+    }
+}
+buildToolsVersion '30.0.0'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:27.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
     implementation 'com.google.android.exoplayer:exoplayer:2.8.4'
     implementation 'com.google.android.exoplayer:extension-rtmp:2.8.4'
+
+    implementation 'com.crowdfire.cfalertdialog:cfalertdialog:1.1.0'
+    implementation 'androidx.preference:preference:1.1.0'
 }

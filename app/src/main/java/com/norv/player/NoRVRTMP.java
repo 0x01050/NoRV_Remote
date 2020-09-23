@@ -1,19 +1,18 @@
 package com.norv.player;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import androidx.preference.PreferenceManager;
+import androidx.annotation.Nullable;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -40,17 +39,23 @@ public class NoRVRTMP extends Service {
     private static int LEFTMOST = -100000;
     private static int RIGHTMOST = 100000;
 
-    public NoRVRTMP() { }
+    private static NoRVRTMP _instance = null;
+    public static NoRVRTMP getInstance() {
+        return _instance;
+    }
+    public NoRVRTMP() {
+        _instance = this;
+    }
 
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-
+    @SuppressLint("InflateParams")
     @Override
     public void onCreate() {
-        Log.e("NoRV", "Service started");
         super.onCreate();
 
         try {
@@ -59,9 +64,7 @@ public class NoRVRTMP extends Service {
             final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                            ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                            : WindowManager.LayoutParams.TYPE_PHONE,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                     PixelFormat.TRANSLUCENT);
             params.gravity = Gravity.TOP;
@@ -69,71 +72,37 @@ public class NoRVRTMP extends Service {
             mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             mWindowManager.addView(mFloatingView, params);
 
-            mFloatingView.findViewById(R.id.close_button).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    throw new NullPointerException();
-                }
+            mFloatingView.findViewById(R.id.rtmp_close_button).setOnClickListener(view -> {
+                throw new NullPointerException();
             });
 
-            mFloatingView.findViewById(R.id.left_button).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    params.x = LEFTMOST;
-                    mWindowManager.updateViewLayout(mFloatingView, params);
-                    mFloatingView.findViewById(R.id.left_button).setVisibility(View.INVISIBLE);
-                    mFloatingView.findViewById(R.id.right_button).setVisibility(View.VISIBLE);
-                }
+            mFloatingView.findViewById(R.id.rtmp_left_button).setOnClickListener(view -> {
+                params.x = LEFTMOST;
+                mWindowManager.updateViewLayout(mFloatingView, params);
+                mFloatingView.findViewById(R.id.rtmp_left_button).setVisibility(View.INVISIBLE);
+                mFloatingView.findViewById(R.id.rtmp_right_button).setVisibility(View.VISIBLE);
             });
-            mFloatingView.findViewById(R.id.right_button).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    params.x = RIGHTMOST;
-                    mWindowManager.updateViewLayout(mFloatingView, params);
-                    mFloatingView.findViewById(R.id.left_button).setVisibility(View.VISIBLE);
-                    mFloatingView.findViewById(R.id.right_button).setVisibility(View.INVISIBLE);
-                }
+            mFloatingView.findViewById(R.id.rtmp_right_button).setOnClickListener(view -> {
+                params.x = RIGHTMOST;
+                mWindowManager.updateViewLayout(mFloatingView, params);
+                mFloatingView.findViewById(R.id.rtmp_left_button).setVisibility(View.VISIBLE);
+                mFloatingView.findViewById(R.id.rtmp_right_button).setVisibility(View.INVISIBLE);
             });
 
             BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
             TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
             TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
             final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
-
-            final PlayerView playerView = mFloatingView.findViewById(R.id.simple_player);
-//            playerView.getVideoSurfaceView().setOnTouchListener(new View.OnTouchListener() {
-//                @Override
-//                public boolean onTouch(View v, MotionEvent event) {
-//                    switch (event.getAction()) {
-//                        case MotionEvent.ACTION_DOWN:
-//                        case MotionEvent.ACTION_UP:
-//                            return true;
-//
-//                        case MotionEvent.ACTION_MOVE:
-//                            DisplayMetrics metrics = new DisplayMetrics();
-//                            mWindowManager.getDefaultDisplay().getMetrics(metrics);
-//                            if (event.getRawX() < metrics.widthPixels / 2)
-//                                params.x = LEFTMOST;
-//                            else
-//                                params.x = RIGHTMOST;
-//                            mWindowManager.updateViewLayout(mFloatingView, params);
-//                            return true;
-//                    }
-//                    return false;
-//                }
-//            });
-
+            final PlayerView playerView = mFloatingView.findViewById(R.id.rtmp_norv_player);
             playerView.setPlayer(player);
             playerView.setUseController(false);
             playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
-
             RtmpDataSourceFactory rtmpDataSourceFactory = new RtmpDataSourceFactory();
             final ExtractorMediaSource videoSource = new ExtractorMediaSource
                     .Factory(rtmpDataSourceFactory)
-                    .createMediaSource(Uri.parse(PreferenceManager.getDefaultSharedPreferences(this).getString("streaming_server", BuildConfig.RTMP_SERVER)));
+                    .createMediaSource(Uri.parse(BuildConfig.RTMP_SERVER));
             player.prepare(videoSource);
             player.setPlayWhenReady(true);
-
             player.addListener(new Player.EventListener() {
                 @Override
                 public void onTimelineChanged(Timeline timeline, Object manifest, int reason) { }
@@ -170,6 +139,9 @@ public class NoRVRTMP extends Service {
                     player.setPlayWhenReady(true);
                 }
             });
+
+            mFloatingView.findViewById(R.id.rtmp_pause_deposition).setOnClickListener(view -> NoRVRTMP.this.pauseDeposition());
+            mFloatingView.findViewById(R.id.rtmp_end_deposition).setOnClickListener(view -> NoRVRTMP.this.endDeposition());
         }
         catch (Exception e) {
             stopSelf();
@@ -180,5 +152,34 @@ public class NoRVRTMP extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (mFloatingView != null) mWindowManager.removeView(mFloatingView);
+    }
+
+    public void showWindow() {
+        if(mFloatingView != null) {
+            mFloatingView.setVisibility(View.VISIBLE);
+        }
+    }
+    public void hideWindow() {
+        if(mFloatingView != null) {
+            mFloatingView.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void pauseDeposition() {
+        hideWindow();
+        Intent pauseIntent = new Intent(NoRVRTMP.this, NoRVPause.class);
+        pauseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(pauseIntent);
+    }
+
+    private void endDeposition() {
+        hideWindow();
+        Intent endIntent = new Intent(NoRVRTMP.this, NoRVEnd.class);
+        endIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(endIntent);
     }
 }

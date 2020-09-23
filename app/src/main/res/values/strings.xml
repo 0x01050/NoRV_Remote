@@ -1,4 +1,50 @@
 <resources>
     <string name="app_name">NoRV Player</string>
-    <string name="title_norv_activity">NoRV Player</string>
+    <string name="norv_activity_title">NoRV Player</string>
+    <string name="norv_confirm_title">NoRV Confirm</string>
+    <string name="norv_pause_title">NoRV Paused</string>
+    <string name="norv_end_title">NoRV Conclude</string>
+
+    <string name="menu_title">...</string>
+    <string name="witness_name_title">Enter Name of Witness <p><font color="red">*</font></p></string>
+    <string name="witness_type_title">Type of Witness <p><font color="red">*</font></p></string>
+    <string name="timezone_title">Timezone where the witness will be <p><font color="red">*</font></p></string>
+    <string name="casename_title">Case Name <p><font color="red">*</font></p></string>
+    <string name="counsel_title">You Represent <p><font color="red">*</font></p></string>
+    <string name="address_title">Address of Deposition <p><font color="red">*</font></p></string>
+    <string name="load_deposition_title">Load Deposition</string>
+    <string name="start_deposition_title">Start Deposition</string>
+    <string name="cancel_deposition_title">Cancel Deposition</string>
+    <string name="pause_deposition_title">Go Off The Record</string>
+    <string name="end_deposition_title">End Deposition</string>
+    <string name="resume_deposition_title">Go Back On The Record</string>
+    <string name="conclude_deposition_title">Conclude the deposition?</string>
+    <string name="yes_title">Yes</string>
+    <string name="no_title">No</string>
+
+    <string name="confirmation_dialog_title">IMPORTANT! This will start the deposition. Make sure everyone is ready.</string>
+    <string name="confirmation_dialog_message">Make sure the camera is pointed directly at the witness,\nALL the mics are outside the encloser and 2 feet in front of their designated speakers and inform all the attendees that you are starting then tap below.</string>
+    <string name="confirmation_dialog_accept">Yes. Mics are in front of speakers &amp; camera pointed at the witness.</string>
+    <string name="confirmation_dialog_cancel">Not Ready</string>
+
+    <string-array name="witness_type">
+        <item>Select</item>
+        <item>Personal</item>
+        <item>30B6</item>
+    </string-array>
+    <string-array name="timezone">
+        <item>Select</item>
+        <item>Pacific Time (PDT)</item>
+        <item>Eastern Time (EDT)</item>
+        <item>Central Time (CDT)</item>
+        <item>Mountain Time (MDT)</item>
+        <item>Mountain Standard Time (MST)</item>
+        <item>Alaska Time (ADT)</item>
+        <item>Hawaii-Aleutian Standard Time (HAST)</item>
+    </string-array>
+    <string-array name="counsel">
+        <item>Select</item>
+        <item>Plaintiffs</item>
+        <item>Defendants</item>
+    </string-array>
 </resources>

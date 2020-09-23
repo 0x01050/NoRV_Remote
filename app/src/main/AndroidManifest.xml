@@ -11,15 +11,30 @@
         android:label="@string/app_name"
         android:icon="@mipmap/launcher"
         android:roundIcon="@mipmap/launcher_round"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:allowBackup="true" >
         <activity
             android:name=".NoRVActivity"
-            android:label="@string/title_norv_activity" >
+            android:label="@string/norv_activity_title"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".NoRVConfirm"
+            android:label="@string/norv_confirm_title"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".NoRVPause"
+            android:label="@string/norv_pause_title"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".NoRVEnd"
+            android:label="@string/norv_end_title"
+            android:screenOrientation="landscape" />
         <service
             android:name=".NoRVRTMP"
             android:enabled="true"

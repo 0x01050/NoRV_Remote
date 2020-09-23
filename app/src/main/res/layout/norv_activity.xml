@@ -5,6 +5,177 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/colorBlack"
-    tools:context=".NoRVActivity">
+    tools:context=".NoRVActivity"
+    android:id="@+id/norv_activity_layout" >
 
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/norv_activity_container" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="25dp"
+            android:divider="@drawable/divider_10dp"
+            android:orientation="vertical"
+            android:paddingVertical="20dp"
+            android:showDividers="middle">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/witness_name_title" />
+
+                <EditText
+                    android:id="@+id/activity_witnessName"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:gravity="start|center_vertical"
+                    android:nextFocusDown="@id/activity_witnessType"
+                    android:paddingHorizontal="8dp"
+                    android:singleLine="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/witness_type_title" />
+
+                <Spinner
+                    android:id="@+id/activity_witnessType"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:entries="@array/witness_type"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:nextFocusUp="@id/activity_witnessName"
+                    android:nextFocusDown="@id/activity_timezone" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/timezone_title" />
+
+                <Spinner
+                    android:id="@+id/activity_timezone"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:entries="@array/timezone"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:nextFocusUp="@id/activity_witnessType"
+                    android:nextFocusDown="@id/activity_casename" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/casename_title" />
+
+                <EditText
+                    android:id="@+id/activity_casename"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:gravity="start|center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:singleLine="true"
+                    android:nextFocusUp="@id/activity_timezone"
+                    android:nextFocusDown="@id/activity_counsel" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/counsel_title" />
+
+                <Spinner
+                    android:id="@+id/activity_counsel"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:entries="@array/counsel"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:nextFocusUp="@id/activity_casename"
+                    android:nextFocusDown="@id/activity_address" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="300dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/address_title" />
+
+                <EditText
+                    android:id="@+id/activity_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/border"
+                    android:gravity="start|center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:singleLine="true"
+                    android:nextFocusUp="@id/activity_counsel"
+                    android:nextFocusDown="@id/activity_load_deposition" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/activity_load_deposition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:text="@string/load_deposition_title"
+                    android:textAllCaps="false"
+                    android:nextFocusUp="@id/activity_address" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

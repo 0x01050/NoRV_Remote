@@ -12,16 +12,18 @@ android {
     buildTypes {
         debug {
             buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live\""
-            resValue "string", "RTMP_SERVER", "rtmp://192.168.108.75/live"
     }
     release {
         minifyEnabled false
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
-        resValue "string", "RTMP_SERVER", "rtmp://192.168.1.5/live"
     }
 }
-buildToolsVersion '30.0.0'
+buildToolsVersion '30.0.2'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {

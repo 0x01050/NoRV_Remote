@@ -7,37 +7,44 @@
 
 
     <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/simple_player"
-        android:layout_width="288dp"
-        android:layout_height="162dp"
+        android:id="@+id/rtmp_norv_player"
+        android:layout_width="294dp"
+        android:layout_height="196dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/rtmp_left_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/app_name"
+                android:src="@android:drawable/ic_media_rew"
+                android:visibility="invisible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <ImageView
+                android:id="@+id/rtmp_right_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/app_name"
+                android:src="@android:drawable/ic_media_ff"
+                tools:layout_editor_absoluteX="248dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.exoplayer2.ui.PlayerView>
 
     <ImageView
-        android:id="@+id/left_button"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:contentDescription="@string/app_name"
-        android:src="@android:drawable/ic_media_rew"
-        android:visibility="invisible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <ImageView
-        android:id="@+id/right_button"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:contentDescription="@string/app_name"
-        android:src="@android:drawable/ic_media_ff"
-        tools:layout_editor_absoluteX="248dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <ImageView
-        android:id="@+id/close_button"
+        android:id="@+id/rtmp_close_button"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:contentDescription="@string/app_name"
@@ -45,5 +52,30 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/rtmp_recording_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rtmp_norv_player">
+
+        <Button
+            android:id="@+id/rtmp_pause_deposition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/pause_deposition_title"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/rtmp_end_deposition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/end_deposition_title"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

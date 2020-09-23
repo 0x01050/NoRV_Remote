@@ -11,11 +11,15 @@ android {
     }
     buildTypes {
         debug {
+            // My Computer IP for Debug
+            buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.108.75\""
             buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live\""
     }
     release {
         minifyEnabled false
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        // Master IP for Product
+        buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.1.5\""
         buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
     }
 }
@@ -27,13 +31,21 @@ buildToolsVersion '30.0.2'
 }
 
 dependencies {
+    // Main
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
 
+    // For RTMP Player
     implementation 'com.google.android.exoplayer:exoplayer:2.8.4'
     implementation 'com.google.android.exoplayer:extension-rtmp:2.8.4'
 
+    // For Confirm Dialog
     implementation 'com.crowdfire.cfalertdialog:cfalertdialog:1.1.0'
-    implementation 'androidx.preference:preference:1.1.0'
+
+    // For API Call
+    implementation 'com.loopj.android:android-async-http:1.4.9'
+
+    // For Loading Spin
+    implementation 'com.github.Nikoloutsos:KLoadingSpin:1.1.0'
 }

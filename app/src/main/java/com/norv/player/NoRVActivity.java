@@ -1,9 +1,12 @@
 package com.norv.player;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
@@ -12,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,8 +23,12 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.example.kloadingspin.KLoadingSpin;
+import com.loopj.android.http.RequestParams;
 
 public class NoRVActivity extends AppCompatActivity {
     private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST = 1998;
@@ -33,6 +41,8 @@ public class NoRVActivity extends AppCompatActivity {
     private Spinner counselFor = null;
     private EditText addressDeposition = null;
     private boolean keyboardOpened = false;
+
+    private KLoadingSpin loadingSpin = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,48 +89,64 @@ public class NoRVActivity extends AppCompatActivity {
                 return;
             }
 
-            Intent confirmIntent = new Intent(NoRVActivity.this, NoRVConfirm.class);
 
+            RequestParams params = new RequestParams();
             if(TextUtils.isEmpty(witnessName.getText())) {
                 witnessName.requestFocus();
                 return;
             }
-            confirmIntent.putExtra("Witness", witnessName.getText().toString());
+            params.add("Witness", witnessName.getText().toString());
 
             if("Select".equals(witnessType.getSelectedItem().toString())) {
                 witnessType.requestFocus();
                 return;
             }
-            confirmIntent.putExtra("Template", witnessType.getSelectedItem().toString());
+            params.add("Template", witnessType.getSelectedItem().toString());
 
             if("Select".equals(timezone.getSelectedItem().toString())) {
                 timezone.performClick();
                 return;
             }
-            confirmIntent.putExtra("TimeZone", timezone.getSelectedItem().toString());
+            params.add("TimeZone", timezone.getSelectedItem().toString());
 
             if(TextUtils.isEmpty(caseName.getText())) {
                 caseName.requestFocus();
                 return;
             }
-            confirmIntent.putExtra("CaseName", caseName.getText().toString());
+            params.add("CaseName", caseName.getText().toString());
 
             if("Select".equals(counselFor.getSelectedItem().toString())) {
                 counselFor.requestFocus();
                 return;
             }
-            confirmIntent.putExtra("Counsel", counselFor.getSelectedItem().toString());
+            params.add("Counsel", counselFor.getSelectedItem().toString());
 
             if(TextUtils.isEmpty(addressDeposition.getText())) {
                 addressDeposition.requestFocus();
                 return;
             }
-            confirmIntent.putExtra("Address", addressDeposition.getText().toString());
+            params.add("Address", addressDeposition.getText().toString());
 
-            startActivity(confirmIntent);
-            finish();
+            hideKeyboard();
+            hideSystemUI();
+            loadingSpin.startAnimation();
+            loadingSpin.setIsVisible(true);
+            loadingSpin.setVisibility(View.VISIBLE);
+            NoRVApi.getInstance().loadDeposition(params, new NoRVApi.ApiListener() {
+                @Override
+                public void onSuccess(String respMsg) {
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    loadingSpin.stopAnimation();
+                    loadingSpin.setVisibility(View.INVISIBLE);
+                    Toast.makeText(NoRVActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
+        loadingSpin = findViewById(R.id.norv_activity_spin);
     }
 
     @Override
@@ -155,30 +181,94 @@ public class NoRVActivity extends AppCompatActivity {
         startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST);
     }
 
+    Handler handler = new Handler(Looper.getMainLooper());
+    int interval = 1000;
+    Runnable checkStatus = new Runnable() {
+        @Override
+        public void run() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+                @Override
+                public void onSuccess(String respMsg) {
+                    if(respMsg.equals(NoRVConst.LOADED))
+                        gotoConfirmScreen();
+                    else if(respMsg.equals(NoRVConst.STARTED))
+                        gotoRTMPScreen();
+                    else if(respMsg.equals(NoRVConst.PAUSED))
+                        gotoPauseScreen();
+                    else
+                        handler.postDelayed(checkStatus, interval);
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    Log.e("NoRV Get Status", errorMsg);
+                    handler.postDelayed(checkStatus, interval);
+                }
+            });
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        handler.removeCallbacks(checkStatus);
+        super.onPause();
+    }
+
     @Override
     protected void onResume() {
+        handler.postDelayed(checkStatus, interval);
         hideSystemUI();
         super.onResume();
     }
 
     private void hideSystemUI() {
-        try
-        {
-            if(Settings.canDrawOverlays(this)) {
-                View decorView = getWindow().getDecorView();
-                decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                );
-                this.getSupportActionBar().hide();
-            } else {
-                this.getSupportActionBar().show();
-            }
+        ActionBar actionBar = this.getSupportActionBar();
+        if(Settings.canDrawOverlays(this)) {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+            );
+            if(actionBar != null)
+                actionBar.hide();
+        } else if(actionBar != null) {
+            actionBar.show();
         }
-        catch (Exception e){}
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(this);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    private void gotoConfirmScreen() {
+        Intent confirmIntent = new Intent(NoRVActivity.this, NoRVConfirm.class);
+        startActivity(confirmIntent);
+        finish();
+    }
+
+    private void gotoRTMPScreen() {
+        NoRVRTMP service = NoRVRTMP.getInstance();
+        if(service != null)
+            service.showWindow();
+        else
+            startService(new Intent(NoRVActivity.this, NoRVRTMP.class));
+        finish();
+    }
+
+    private void gotoPauseScreen() {
+        Intent confirmIntent = new Intent(NoRVActivity.this, NoRVPause.class);
+        startActivity(confirmIntent);
+        finish();
     }
 }

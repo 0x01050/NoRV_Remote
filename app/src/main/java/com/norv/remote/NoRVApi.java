@@ -1,4 +1,4 @@
-package com.norv.player;
+package com.norv.remote;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;

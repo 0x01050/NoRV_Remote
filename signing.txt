@@ -1,4 +1,4 @@
-norvplayer.jks
+norvremote.jks
 password: norv_2020!
 alias: norvplayer
 password: norv_2020!

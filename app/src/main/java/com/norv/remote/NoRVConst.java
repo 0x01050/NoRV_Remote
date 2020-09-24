@@ -1,4 +1,4 @@
-package com.norv.player;
+package com.norv.remote;
 
 public class NoRVConst {
     public static String STOPPED = "STOPPED";

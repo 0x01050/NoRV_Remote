@@ -1,4 +1,4 @@
-package com.norv.player;
+package com.norv.remote;
 
 import android.app.Application;
 import android.content.Context;

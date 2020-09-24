@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.norv.player">
+    package="com.norv.remote">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
 
     <application
-        android:name=".NoRVApp"
+        android:name="com.norv.remote.NoRVApp"
         android:label="@string/app_name"
         android:icon="@mipmap/launcher"
         android:roundIcon="@mipmap/launcher_round"
         android:theme="@style/AppTheme"
         android:allowBackup="true" >
         <activity
-            android:name=".NoRVActivity"
+            android:name="com.norv.remote.NoRVActivity"
             android:label="@string/norv_activity_title"
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize">
@@ -24,19 +24,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".NoRVConfirm"
+            android:name="com.norv.remote.NoRVConfirm"
             android:label="@string/norv_confirm_title"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".NoRVPause"
+            android:name="com.norv.remote.NoRVPause"
             android:label="@string/norv_pause_title"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".NoRVEnd"
+            android:name="com.norv.remote.NoRVEnd"
             android:label="@string/norv_end_title"
             android:screenOrientation="landscape" />
         <service
-            android:name=".NoRVRTMP"
+            android:name="com.norv.remote.NoRVRTMP"
             android:enabled="true"
             android:exported="false" />
     </application>

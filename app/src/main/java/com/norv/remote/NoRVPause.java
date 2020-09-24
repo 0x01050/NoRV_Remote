@@ -1,6 +1,8 @@
-package com.norv.player;
+package com.norv.remote;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,21 +34,30 @@ import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
-public class NoRVEnd extends AppCompatActivity {
-    private KLoadingSpin stopSpin;
+public class NoRVPause extends AppCompatActivity {
+    private KLoadingSpin resumeSpin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.norv_end);
+        setContentView(R.layout.norv_pause);
 
         hideSystemUI();
+
+        final int DELAY = 1000;
+        ColorDrawable baseColor = new ColorDrawable(0xff00ff00);
+        ColorDrawable targetColor = new ColorDrawable(0xffff0000);
+        AnimationDrawable layoutBackground = new AnimationDrawable();
+        layoutBackground.addFrame(baseColor, DELAY);
+        layoutBackground.addFrame(targetColor, DELAY);
+        findViewById(R.id.pause_background).setBackground(layoutBackground);
+        layoutBackground.start();
 
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
         TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
         final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
-        final PlayerView playerView = findViewById(R.id.end_norv_player);
+        final PlayerView playerView = findViewById(R.id.pause_norv_player);
         playerView.setPlayer(player);
         playerView.setUseController(false);
         playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
@@ -93,37 +104,27 @@ public class NoRVEnd extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.accept_conclude_deposition).setOnClickListener(view -> NoRVEnd.this.acceptEndDeposition());
-        findViewById(R.id.cancel_conclude_deposition).setOnClickListener(view -> NoRVEnd.this.cancelEndDeposition());
+        findViewById(R.id.pause_resume_deposition).setOnClickListener(view -> NoRVPause.this.resumeDeposition());
 
-        stopSpin = findViewById(R.id.norv_end_stop_spin);
+        resumeSpin = findViewById(R.id.norv_pause_resume_spin);
     }
 
-    private void acceptEndDeposition() {
-        stopSpin.startAnimation();
-        stopSpin.setIsVisible(true);
-        stopSpin.setVisibility(View.VISIBLE);
-        NoRVApi.getInstance().controlDeposition("stopDeposition", null, new NoRVApi.ApiListener() {
+    private void resumeDeposition() {
+        resumeSpin.startAnimation();
+        resumeSpin.setIsVisible(true);
+        resumeSpin.setVisibility(View.VISIBLE);
+        NoRVApi.getInstance().controlDeposition("resumeDeposition", null, new NoRVApi.ApiListener() {
             @Override
             public void onSuccess(String respMsg) {
             }
 
             @Override
             public void onFailure(String errorMsg) {
-                stopSpin.stopAnimation();
-                stopSpin.setVisibility(View.INVISIBLE);
-                Toast.makeText(NoRVEnd.this, errorMsg, Toast.LENGTH_SHORT).show();
+                resumeSpin.stopAnimation();
+                resumeSpin.setVisibility(View.INVISIBLE);
+                Toast.makeText(NoRVPause.this, errorMsg, Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void cancelEndDeposition() {
-        NoRVRTMP service = NoRVRTMP.getInstance();
-        if(service != null)
-            service.showWindow();
-        else
-            startService(new Intent(NoRVEnd.this, NoRVRTMP.class));
-        finish();
     }
 
     @Override
@@ -143,8 +144,8 @@ public class NoRVEnd extends AppCompatActivity {
                         gotoHomeScreen();
                     else if(respMsg.equals(NoRVConst.LOADED))
                         gotoConfirmScreen();
-                    else if(respMsg.equals(NoRVConst.PAUSED))
-                        gotoPauseScreen();
+                    else if(respMsg.equals(NoRVConst.STARTED))
+                        gotoRTMPScreen();
                     else
                         handler.postDelayed(checkStatus, interval);
                 }
@@ -186,20 +187,24 @@ public class NoRVEnd extends AppCompatActivity {
     }
 
     private void gotoHomeScreen() {
-        Intent activityIntent = new Intent(NoRVEnd.this, NoRVActivity.class);
+        Intent activityIntent = new Intent(NoRVPause.this, NoRVActivity.class);
         startActivity(activityIntent);
         finish();
     }
 
     private void gotoConfirmScreen() {
-        Intent confirmIntent = new Intent(NoRVEnd.this, NoRVConfirm.class);
+        Intent confirmIntent = new Intent(NoRVPause.this, NoRVConfirm.class);
         startActivity(confirmIntent);
         finish();
     }
 
-    private void gotoPauseScreen() {
-        Intent pauseIntent = new Intent(NoRVEnd.this, NoRVPause.class);
-        startActivity(pauseIntent);
+    private void gotoRTMPScreen() {
+        NoRVRTMP rtmpService = NoRVRTMP.getInstance();
+        if(rtmpService != null)
+            rtmpService.showWindow();
+        else
+            startService(new Intent(NoRVPause.this, NoRVRTMP.class));
         finish();
     }
+
 }

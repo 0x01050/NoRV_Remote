@@ -3,10 +3,16 @@ package com.norv.player;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.kloadingspin.KLoadingSpin;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -27,6 +33,8 @@ import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
 public class NoRVEnd extends AppCompatActivity {
+    private KLoadingSpin stopSpin;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,15 +94,27 @@ public class NoRVEnd extends AppCompatActivity {
         });
 
         findViewById(R.id.accept_conclude_deposition).setOnClickListener(view -> NoRVEnd.this.acceptEndDeposition());
-
         findViewById(R.id.cancel_conclude_deposition).setOnClickListener(view -> NoRVEnd.this.cancelEndDeposition());
+
+        stopSpin = findViewById(R.id.norv_end_stop_spin);
     }
 
     private void acceptEndDeposition() {
-        stopService(new Intent(NoRVEnd.this, NoRVRTMP.class));
-        Intent norvIntent = new Intent(NoRVEnd.this, NoRVActivity.class);
-        startActivity(norvIntent);
-        finish();
+        stopSpin.startAnimation();
+        stopSpin.setIsVisible(true);
+        stopSpin.setVisibility(View.VISIBLE);
+        NoRVApi.getInstance().controlDeposition("stopDeposition", null, new NoRVApi.ApiListener() {
+            @Override
+            public void onSuccess(String respMsg) {
+            }
+
+            @Override
+            public void onFailure(String errorMsg) {
+                stopSpin.stopAnimation();
+                stopSpin.setVisibility(View.INVISIBLE);
+                Toast.makeText(NoRVEnd.this, errorMsg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void cancelEndDeposition() {
@@ -111,25 +131,75 @@ public class NoRVEnd extends AppCompatActivity {
     {
     }
 
+    Handler handler = new Handler(Looper.getMainLooper());
+    int interval = 1000;
+    Runnable checkStatus = new Runnable() {
+        @Override
+        public void run() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+                @Override
+                public void onSuccess(String respMsg) {
+                    if(respMsg.equals(NoRVConst.STOPPED))
+                        gotoHomeScreen();
+                    else if(respMsg.equals(NoRVConst.LOADED))
+                        gotoConfirmScreen();
+                    else if(respMsg.equals(NoRVConst.PAUSED))
+                        gotoPauseScreen();
+                    else
+                        handler.postDelayed(checkStatus, interval);
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    Log.e("NoRV Get Status", errorMsg);
+                    handler.postDelayed(checkStatus, interval);
+                }
+            });
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        handler.removeCallbacks(checkStatus);
+        super.onPause();
+    }
+
     @Override
     protected void onResume() {
+        handler.postDelayed(checkStatus, interval);
         hideSystemUI();
         super.onResume();
     }
 
     private void hideSystemUI() {
-        try
-        {
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN);
-            this.getSupportActionBar().hide();
-        }
-        catch (Exception e){}
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+        ActionBar actionBar = this.getSupportActionBar();
+        if(actionBar != null)
+            actionBar.hide();
+    }
+
+    private void gotoHomeScreen() {
+        Intent activityIntent = new Intent(NoRVEnd.this, NoRVActivity.class);
+        startActivity(activityIntent);
+        finish();
+    }
+
+    private void gotoConfirmScreen() {
+        Intent confirmIntent = new Intent(NoRVEnd.this, NoRVConfirm.class);
+        startActivity(confirmIntent);
+        finish();
+    }
+
+    private void gotoPauseScreen() {
+        Intent pauseIntent = new Intent(NoRVEnd.this, NoRVPause.class);
+        startActivity(pauseIntent);
+        finish();
     }
 }

@@ -55,9 +55,9 @@ public class NoRVApi {
         }
     }
 
-    public void loadDeposition(RequestParams params, final ApiListener listener) {
+    public void controlDeposition(String action, RequestParams params, final ApiListener listener) {
         try {
-            httpClient.post(BuildConfig.CLIENT_SERVER + "/loadDeposition", params, new AsyncHttpResponseHandler() {
+            httpClient.post(BuildConfig.CLIENT_SERVER + "/" + action, params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {

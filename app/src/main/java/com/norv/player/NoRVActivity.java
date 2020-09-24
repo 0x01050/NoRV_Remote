@@ -10,13 +10,10 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -132,7 +129,7 @@ public class NoRVActivity extends AppCompatActivity {
             loadingSpin.startAnimation();
             loadingSpin.setIsVisible(true);
             loadingSpin.setVisibility(View.VISIBLE);
-            NoRVApi.getInstance().loadDeposition(params, new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().controlDeposition("loadDeposition", params, new NoRVApi.ApiListener() {
                 @Override
                 public void onSuccess(String respMsg) {
                 }
@@ -146,7 +143,7 @@ public class NoRVActivity extends AppCompatActivity {
             });
         });
 
-        loadingSpin = findViewById(R.id.norv_activity_spin);
+        loadingSpin = findViewById(R.id.norv_activity_load_spin);
     }
 
     @Override
@@ -258,17 +255,17 @@ public class NoRVActivity extends AppCompatActivity {
     }
 
     private void gotoRTMPScreen() {
-        NoRVRTMP service = NoRVRTMP.getInstance();
-        if(service != null)
-            service.showWindow();
+        NoRVRTMP rtmpService = NoRVRTMP.getInstance();
+        if(rtmpService != null)
+            rtmpService.showWindow();
         else
             startService(new Intent(NoRVActivity.this, NoRVRTMP.class));
         finish();
     }
 
     private void gotoPauseScreen() {
-        Intent confirmIntent = new Intent(NoRVActivity.this, NoRVPause.class);
-        startActivity(confirmIntent);
+        Intent pauseIntent = new Intent(NoRVActivity.this, NoRVPause.class);
+        startActivity(pauseIntent);
         finish();
     }
 }

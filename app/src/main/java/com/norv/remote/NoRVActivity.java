@@ -36,7 +36,13 @@ public class NoRVActivity extends AppCompatActivity {
     private Spinner timezone = null;
     private EditText caseName = null;
     private Spinner counselFor = null;
-    private EditText addressDeposition = null;
+
+    private EditText addressStreet = null;
+    private EditText addressCity = null;
+    private EditText addressState = null;
+    private EditText addressZip = null;
+
+
     private boolean keyboardOpened = false;
 
     private KLoadingSpin loadingSpin = null;
@@ -77,7 +83,11 @@ public class NoRVActivity extends AppCompatActivity {
         timezone = findViewById(R.id.activity_timezone);
         caseName = findViewById(R.id.activity_casename);
         counselFor = findViewById(R.id.activity_counsel);
-        addressDeposition = findViewById(R.id.activity_address);
+
+        addressStreet = findViewById(R.id.activity_address_street);
+        addressCity = findViewById(R.id.activity_address_city);
+        addressState = findViewById(R.id.activity_address_state);
+        addressZip = findViewById(R.id.activity_address_zip);
 
         Button loadDeposition = findViewById(R.id.activity_load_deposition);
         loadDeposition.setOnClickListener(v -> {
@@ -110,7 +120,7 @@ public class NoRVActivity extends AppCompatActivity {
                 caseName.requestFocus();
                 return;
             }
-            params.add("CaseName", caseName.getText().toString());
+            params.add("CaseName", ParseCaseName(caseName.getText().toString()));
 
             if("Select".equals(counselFor.getSelectedItem().toString())) {
                 counselFor.requestFocus();
@@ -118,18 +128,35 @@ public class NoRVActivity extends AppCompatActivity {
             }
             params.add("Counsel", counselFor.getSelectedItem().toString());
 
-            if(TextUtils.isEmpty(addressDeposition.getText())) {
-                addressDeposition.requestFocus();
+            String address = "";
+            if(TextUtils.isEmpty(addressStreet.getText())) {
+                addressStreet.requestFocus();
                 return;
             }
-            params.add("Address", addressDeposition.getText().toString());
+            address += addressStreet.getText().toString();
+            if(TextUtils.isEmpty(addressCity.getText())) {
+                addressCity.requestFocus();
+                return;
+            }
+            address += ", " + addressCity.getText().toString();
+            if(TextUtils.isEmpty(addressState.getText())) {
+                addressState.requestFocus();
+                return;
+            }
+            address += ", " + addressState.getText().toString();
+            if(TextUtils.isEmpty(addressZip.getText())) {
+                addressZip.requestFocus();
+                return;
+            }
+            address += ", " + addressZip.getText().toString();
+            params.add("Address", address);
 
             hideKeyboard();
             hideSystemUI();
             loadingSpin.startAnimation();
             loadingSpin.setIsVisible(true);
             loadingSpin.setVisibility(View.VISIBLE);
-            NoRVApi.getInstance().controlDeposition("loadDeposition", params, new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().controlDeposition("loadDeposition", params, new NoRVApi.ControlListener() {
                 @Override
                 public void onSuccess(String respMsg) {
                 }
@@ -178,28 +205,33 @@ public class NoRVActivity extends AppCompatActivity {
         startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST);
     }
 
-    Handler handler = new Handler(Looper.getMainLooper());
-    int interval = 1000;
-    Runnable checkStatus = new Runnable() {
+    final Handler handler = new Handler(Looper.getMainLooper());
+    final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
-            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
-                public void onSuccess(String respMsg) {
-                    if(respMsg.equals(NoRVConst.LOADED))
-                        gotoConfirmScreen();
-                    else if(respMsg.equals(NoRVConst.STARTED))
-                        gotoRTMPScreen();
-                    else if(respMsg.equals(NoRVConst.PAUSED))
-                        gotoPauseScreen();
-                    else
-                        handler.postDelayed(checkStatus, interval);
+                public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    switch (status) {
+                        case NoRVConst.LOADED:
+                            gotoConfirmScreen();
+                            break;
+                        case NoRVConst.STARTED:
+                            gotoRTMPScreen();
+                            break;
+                        case NoRVConst.PAUSED:
+                            gotoPauseScreen();
+                            break;
+                        default:
+                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                            break;
+                    }
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
                     Log.e("NoRV Get Status", errorMsg);
-                    handler.postDelayed(checkStatus, interval);
+                    handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
             });
         }
@@ -213,7 +245,7 @@ public class NoRVActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        handler.postDelayed(checkStatus, interval);
+        handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
         hideSystemUI();
         super.onResume();
     }
@@ -267,5 +299,36 @@ public class NoRVActivity extends AppCompatActivity {
         Intent pauseIntent = new Intent(NoRVActivity.this, NoRVPause.class);
         startActivity(pauseIntent);
         finish();
+    }
+
+    private static String ParseCaseName(String CaseName) {
+        CaseName = ReplaceWithPattern(CaseName, " VS ");
+        CaseName = ReplaceWithPattern(CaseName, " versus ");
+        return CaseName;
+    }
+    private static String ReplaceWithPattern(String CaseName, String Pattern) {
+        int index = containsIgnoreCase(CaseName, Pattern);
+        if(index >= 0) {
+            int length = Pattern.length();
+            String find = CaseName.substring(index, index + length - 1);
+            CaseName = CaseName.replace(find, find + ".");
+        }
+        return CaseName;
+    }
+    private static int containsIgnoreCase(String src, String what) {
+        final int length = what.length();
+        if (length == 0)
+            return -1;
+        final char firstLo = Character.toLowerCase(what.charAt(0));
+        final char firstUp = Character.toUpperCase(what.charAt(0));
+
+        for (int i = src.length() - length; i >= 0; i--) {
+            final char ch = src.charAt(i);
+            if (ch != firstLo && ch != firstUp)
+                continue;
+            if (src.regionMatches(true, i, what, 0, length))
+                return i;
+        }
+        return -1;
     }
 }

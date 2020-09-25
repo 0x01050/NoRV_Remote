@@ -1,10 +1,12 @@
 package com.norv.remote;
 
 public class NoRVConst {
-    public static String STOPPED = "STOPPED";
-    public static String LOADED = "LOADED";
-    public static String STARTED = "STARTED";
-    public static String PAUSED = "PAUSED";
+    final public static String STOPPED = "STOPPED";
+    final public static String LOADED = "LOADED";
+    final public static String STARTED = "STARTED";
+    final public static String PAUSED = "PAUSED";
 
-    public static String SucessKey = "Successed";
+    final public static String SuccessKey = "Succeed";
+
+    final public static int CheckStatusInterval = 1000;
 }

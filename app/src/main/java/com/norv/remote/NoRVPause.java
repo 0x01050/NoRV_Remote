@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
@@ -36,6 +37,8 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
 public class NoRVPause extends AppCompatActivity {
     private KLoadingSpin resumeSpin;
+    private TextView runningTimeLabel;
+    private TextView breaksNumberLabel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,13 +110,16 @@ public class NoRVPause extends AppCompatActivity {
         findViewById(R.id.pause_resume_deposition).setOnClickListener(view -> NoRVPause.this.resumeDeposition());
 
         resumeSpin = findViewById(R.id.norv_pause_resume_spin);
+
+        runningTimeLabel = findViewById(R.id.pause_total_time);
+        breaksNumberLabel = findViewById(R.id.pause_breaks_number);
     }
 
     private void resumeDeposition() {
         resumeSpin.startAnimation();
         resumeSpin.setIsVisible(true);
         resumeSpin.setVisibility(View.VISIBLE);
-        NoRVApi.getInstance().controlDeposition("resumeDeposition", null, new NoRVApi.ApiListener() {
+        NoRVApi.getInstance().controlDeposition("resumeDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
             }
@@ -132,28 +138,38 @@ public class NoRVPause extends AppCompatActivity {
     {
     }
 
-    Handler handler = new Handler(Looper.getMainLooper());
-    int interval = 1000;
-    Runnable checkStatus = new Runnable() {
+    final Handler handler = new Handler(Looper.getMainLooper());
+    final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
-            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
-                public void onSuccess(String respMsg) {
-                    if(respMsg.equals(NoRVConst.STOPPED))
-                        gotoHomeScreen();
-                    else if(respMsg.equals(NoRVConst.LOADED))
-                        gotoConfirmScreen();
-                    else if(respMsg.equals(NoRVConst.STARTED))
-                        gotoRTMPScreen();
-                    else
-                        handler.postDelayed(checkStatus, interval);
+                public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    switch (status) {
+                        case NoRVConst.STOPPED:
+                            gotoHomeScreen();
+                            break;
+                        case NoRVConst.LOADED:
+                            gotoConfirmScreen();
+                            break;
+                        case NoRVConst.STARTED:
+                            gotoRTMPScreen();
+                            break;
+                        case NoRVConst.PAUSED:
+                            runOnUiThread(() -> {
+                                runningTimeLabel.setText(runningTime);
+                                breaksNumberLabel.setText(breaksNumber);
+                            });
+                        default:
+                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                            break;
+                    }
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
                     Log.e("NoRV Get Status", errorMsg);
-                    handler.postDelayed(checkStatus, interval);
+                    handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
             });
         }
@@ -167,7 +183,7 @@ public class NoRVPause extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        handler.postDelayed(checkStatus, interval);
+        handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
         hideSystemUI();
         super.onResume();
     }

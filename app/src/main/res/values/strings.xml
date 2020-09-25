@@ -5,7 +5,7 @@
     <string name="norv_pause_title">NoRV Paused</string>
     <string name="norv_end_title">NoRV Conclude</string>
 
-    <string name="menu_title">...</string>
+    <string name="menu_title">…</string>
     <string name="witness_name_title">Enter Name of Witness <p><font color="red">*</font></p></string>
     <string name="witness_type_title">Type of Witness <p><font color="red">*</font></p></string>
     <string name="timezone_title">Timezone where the witness will be <p><font color="red">*</font></p></string>
@@ -16,6 +16,10 @@
     <string name="start_deposition_title">Start Deposition</string>
     <string name="cancel_deposition_title">Cancel Deposition</string>
     <string name="pause_deposition_title">Go Off The Record</string>
+    <string name="norv_pause_alert">You are off the record.\nNo Audio or video is being recorded!</string>
+    <string name="norv_pause_totaltime">Time on the record:</string>
+    <string name="norv_pause_breaks">Number of Breaks:</string>
+    <string name="norv_pause_unknown">?</string>
     <string name="end_deposition_title">End Deposition</string>
     <string name="resume_deposition_title">Go Back On The Record</string>
     <string name="conclude_deposition_title">Conclude the deposition?</string>

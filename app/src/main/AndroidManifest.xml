@@ -12,7 +12,8 @@
         android:icon="@mipmap/launcher"
         android:roundIcon="@mipmap/launcher_round"
         android:theme="@style/AppTheme"
-        android:allowBackup="true" >
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor">
         <activity
             android:name="com.norv.remote.NoRVActivity"
             android:label="@string/norv_activity_title"

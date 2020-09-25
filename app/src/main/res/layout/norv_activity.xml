@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="25dp"
-            android:divider="@drawable/divider_10dp"
+            android:divider="@drawable/vertical_divider_10dp"
             android:orientation="vertical"
             android:paddingVertical="20dp"
             android:showDividers="middle">
@@ -50,7 +50,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:divider="@drawable/divider_5dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -74,7 +73,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:divider="@drawable/divider_5dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -136,7 +134,7 @@
                     android:focusable="true"
                     android:focusableInTouchMode="true"
                     android:nextFocusUp="@id/activity_casename"
-                    android:nextFocusDown="@id/activity_address" />
+                    android:nextFocusDown="@id/activity_address_street" />
             </LinearLayout>
 
             <LinearLayout
@@ -149,16 +147,63 @@
                     android:layout_height="wrap_content"
                     android:text="@string/address_title" />
 
-                <EditText
-                    android:id="@+id/activity_address"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:background="@drawable/border"
-                    android:gravity="start|center_vertical"
-                    android:paddingHorizontal="8dp"
-                    android:singleLine="true"
-                    android:nextFocusUp="@id/activity_counsel"
-                    android:nextFocusDown="@id/activity_load_deposition" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="5"
+                    android:showDividers="middle"
+                    android:divider="@drawable/horizontal_divider_5dp">
+
+                    <EditText
+                        android:id="@+id/activity_address_street"
+                        android:layout_width="0dp"
+                        android:layout_weight="2"
+                        android:layout_height="40dp"
+                        android:background="@drawable/border"
+                        android:gravity="start|center_vertical"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true"
+                        android:nextFocusUp="@id/activity_counsel"
+                        android:nextFocusDown="@id/activity_address_city" />
+
+                    <EditText
+                        android:id="@+id/activity_address_city"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="40dp"
+                        android:background="@drawable/border"
+                        android:gravity="start|center_vertical"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true"
+                        android:nextFocusUp="@id/activity_address_street"
+                        android:nextFocusDown="@id/activity_address_state" />
+
+                    <EditText
+                        android:id="@+id/activity_address_state"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="40dp"
+                        android:background="@drawable/border"
+                        android:gravity="start|center_vertical"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true"
+                        android:nextFocusUp="@id/activity_address_city"
+                        android:nextFocusDown="@id/activity_address_zip" />
+
+                    <EditText
+                        android:id="@+id/activity_address_zip"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="40dp"
+                        android:background="@drawable/border"
+                        android:gravity="start|center_vertical"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true"
+                        android:nextFocusUp="@id/activity_address_state"
+                        android:nextFocusDown="@id/activity_load_deposition" />
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
@@ -174,7 +219,7 @@
                     android:padding="20dp"
                     android:text="@string/load_deposition_title"
                     android:textAllCaps="false"
-                    android:nextFocusUp="@id/activity_address" />
+                    android:nextFocusUp="@id/activity_address_zip" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

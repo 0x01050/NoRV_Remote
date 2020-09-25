@@ -8,7 +8,7 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 
 public class NoRVHandler implements Thread.UncaughtExceptionHandler {
-    private Context context;
+    final private Context context;
     public NoRVHandler(Context a) {
         context = a;
     }

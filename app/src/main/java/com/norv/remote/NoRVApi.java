@@ -17,7 +17,7 @@ public class NoRVApi {
         return __instance;
     }
 
-    private AsyncHttpClient httpClient;
+    final private AsyncHttpClient httpClient;
 
     private NoRVApi() {
         httpClient = new AsyncHttpClient();
@@ -25,19 +25,23 @@ public class NoRVApi {
         httpClient.setTimeout(30000);
     }
 
-    public interface ApiListener {
-        void onSuccess(String respMsg);
+    public interface StatusListener {
+        void onSuccess(String status, String ignorable, String runningTime, String breaksNumber);
         void onFailure(String errorMsg);
     }
 
-    public void getStatus(final ApiListener listener) {
+    public void getStatus(final StatusListener listener) {
         try {
             httpClient.get(BuildConfig.CLIENT_SERVER + "/getStatus", new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
                         String resp = new String(responseBody, StandardCharsets.UTF_8);
-                        listener.onSuccess(resp);
+                        String[] results = resp.split(",");
+                        if(results.length == 4)
+                            listener.onSuccess(results[0], results[1], results[2], results[3]);
+                        else
+                            listener.onFailure("Invalid Response");
                     } catch (Exception e) {
                         e.printStackTrace();
                         listener.onFailure(e.getMessage());
@@ -55,14 +59,19 @@ public class NoRVApi {
         }
     }
 
-    public void controlDeposition(String action, RequestParams params, final ApiListener listener) {
+    public interface ControlListener {
+        void onSuccess(String respMsg);
+        void onFailure(String errorMsg);
+    }
+
+    public void controlDeposition(String action, RequestParams params, final ControlListener listener) {
         try {
             httpClient.post(BuildConfig.CLIENT_SERVER + "/" + action, params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
                         String resp = new String(responseBody, StandardCharsets.UTF_8);
-                        if (resp.contains(NoRVConst.SucessKey)) {
+                        if (resp.contains(NoRVConst.SuccessKey)) {
                             listener.onSuccess(resp);
                         } else {
                             listener.onFailure(resp);

@@ -41,8 +41,9 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 public class NoRVRTMP extends Service {
     private WindowManager mWindowManager;
     private View mFloatingView;
-    private static int LEFTMOST = -100000;
-    private static int RIGHTMOST = 100000;
+
+    final private static int LEFTMOST = -100000;
+    final private static int RIGHTMOST = 100000;
 
     private KLoadingSpin pauseSpin;
 
@@ -161,28 +162,33 @@ public class NoRVRTMP extends Service {
         }
     }
 
-    Handler handler = new Handler(Looper.getMainLooper());
-    int interval = 1000;
-    Runnable checkStatus = new Runnable() {
+    final Handler handler = new Handler(Looper.getMainLooper());
+    final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
-            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
-                public void onSuccess(String respMsg) {
-                    if(respMsg.equals(NoRVConst.STOPPED))
-                        gotoHomeScreen();
-                    else if(respMsg.equals(NoRVConst.LOADED))
-                        gotoConfirmScreen();
-                    else if(respMsg.equals(NoRVConst.PAUSED))
-                        gotoPauseScreen();
-                    else
-                        handler.postDelayed(checkStatus, interval);
+                public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    switch (status) {
+                        case NoRVConst.STOPPED:
+                            gotoHomeScreen();
+                            break;
+                        case NoRVConst.LOADED:
+                            gotoConfirmScreen();
+                            break;
+                        case NoRVConst.PAUSED:
+                            gotoPauseScreen();
+                            break;
+                        default:
+                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                            break;
+                    }
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
                     Log.e("NoRV Get Status", errorMsg);
-                    handler.postDelayed(checkStatus, interval);
+                    handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
             });
         }
@@ -201,7 +207,7 @@ public class NoRVRTMP extends Service {
         if(mFloatingView != null) {
             mFloatingView.setVisibility(View.VISIBLE);
         }
-        handler.postDelayed(checkStatus, interval);
+        handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
     }
     public void hideWindow() {
         pauseSpin.stopAnimation();
@@ -216,7 +222,7 @@ public class NoRVRTMP extends Service {
         pauseSpin.startAnimation();
         pauseSpin.setIsVisible(true);
         pauseSpin.setVisibility(View.VISIBLE);
-        NoRVApi.getInstance().controlDeposition("pauseDeposition", null, new NoRVApi.ApiListener() {
+        NoRVApi.getInstance().controlDeposition("pauseDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
             }

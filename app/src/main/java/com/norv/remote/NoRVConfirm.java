@@ -139,7 +139,7 @@ public class NoRVConfirm extends AppCompatActivity {
         cancelSpin.startAnimation();
         cancelSpin.setIsVisible(true);
         cancelSpin.setVisibility(View.VISIBLE);
-        NoRVApi.getInstance().controlDeposition("cancelDeposition", null, new NoRVApi.ApiListener() {
+        NoRVApi.getInstance().controlDeposition("cancelDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
             }
@@ -168,7 +168,7 @@ public class NoRVConfirm extends AppCompatActivity {
         startSpin.startAnimation();
         startSpin.setIsVisible(true);
         startSpin.setVisibility(View.VISIBLE);
-        NoRVApi.getInstance().controlDeposition("startDeposition", null, new NoRVApi.ApiListener() {
+        NoRVApi.getInstance().controlDeposition("startDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
             }
@@ -187,28 +187,33 @@ public class NoRVConfirm extends AppCompatActivity {
     {
     }
 
-    Handler handler = new Handler(Looper.getMainLooper());
-    int interval = 1000;
-    Runnable checkStatus = new Runnable() {
+    final Handler handler = new Handler(Looper.getMainLooper());
+    final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
-            NoRVApi.getInstance().getStatus(new NoRVApi.ApiListener() {
+            NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
-                public void onSuccess(String respMsg) {
-                    if(respMsg.equals(NoRVConst.STOPPED))
-                        gotoHomeScreen();
-                    else if(respMsg.equals(NoRVConst.STARTED))
-                        gotoRTMPScreen();
-                    else if(respMsg.equals(NoRVConst.PAUSED))
-                        gotoPauseScreen();
-                    else
-                        handler.postDelayed(checkStatus, interval);
+                public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    switch (status) {
+                        case NoRVConst.STOPPED:
+                            gotoHomeScreen();
+                            break;
+                        case NoRVConst.STARTED:
+                            gotoRTMPScreen();
+                            break;
+                        case NoRVConst.PAUSED:
+                            gotoPauseScreen();
+                            break;
+                        default:
+                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                            break;
+                    }
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
                     Log.e("NoRV Get Status", errorMsg);
-                    handler.postDelayed(checkStatus, interval);
+                    handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
             });
         }
@@ -222,7 +227,7 @@ public class NoRVConfirm extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        handler.postDelayed(checkStatus, interval);
+        handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
         hideSystemUI();
         super.onResume();
     }

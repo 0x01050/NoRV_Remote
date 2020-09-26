@@ -183,6 +183,18 @@ public class NoRVRTMP extends Service {
                             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                             break;
                     }
+                    if(mFloatingView != null) {
+                        switch(ignorable) {
+                            case "True":
+                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(false);
+                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(false);
+                                break;
+                            default:
+                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(true);
+                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(true);
+                                break;
+                        }
+                    }
                 }
 
                 @Override

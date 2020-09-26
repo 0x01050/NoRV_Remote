@@ -152,6 +152,16 @@ public class NoRVEnd extends AppCompatActivity {
                             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                             break;
                     }
+                    switch(ignorable) {
+                        case "True":
+                            findViewById(R.id.accept_conclude_deposition).setEnabled(false);
+                            findViewById(R.id.cancel_conclude_deposition).setEnabled(false);
+                            break;
+                        default:
+                            findViewById(R.id.accept_conclude_deposition).setEnabled(true);
+                            findViewById(R.id.cancel_conclude_deposition).setEnabled(true);
+                            break;
+                    }
                 }
 
                 @Override

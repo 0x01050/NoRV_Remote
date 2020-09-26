@@ -164,6 +164,14 @@ public class NoRVPause extends AppCompatActivity {
                             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                             break;
                     }
+                    switch(ignorable) {
+                        case "True":
+                            findViewById(R.id.pause_resume_deposition).setEnabled(false);
+                            break;
+                        default:
+                            findViewById(R.id.pause_resume_deposition).setEnabled(true);
+                            break;
+                    }
                 }
 
                 @Override

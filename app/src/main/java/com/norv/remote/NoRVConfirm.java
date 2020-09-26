@@ -208,6 +208,16 @@ public class NoRVConfirm extends AppCompatActivity {
                             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                             break;
                     }
+                    switch(ignorable) {
+                        case "True":
+                            findViewById(R.id.confirm_start_deposition).setEnabled(false);
+                            findViewById(R.id.confirm_cancel_deposition).setEnabled(false);
+                            break;
+                        default:
+                            findViewById(R.id.confirm_start_deposition).setEnabled(true);
+                            findViewById(R.id.confirm_cancel_deposition).setEnabled(true);
+                            break;
+                    }
                 }
 
                 @Override

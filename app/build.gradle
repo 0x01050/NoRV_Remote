@@ -13,14 +13,14 @@ android {
         debug {
             // My Computer IP for Debug
             buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.108.75\""
-            buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live\""
+            buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.108.75/live live=1 buffer=1000\""
     }
     release {
         minifyEnabled false
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         // Master IP for Product
         buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.1.5\""
-        buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live\""
+        buildConfigField "String", "RTMP_SERVER", "\"rtmp://192.168.1.5/live live=1 buffer=1000\""
     }
 }
 buildToolsVersion '30.0.2'

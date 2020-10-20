@@ -96,6 +96,8 @@ public class NoRVPause extends AppCompatActivity {
                     player.stop();
                     player.prepare(videoSource);
                     player.setPlayWhenReady(true);
+                } else if(playbackState == Player.STATE_BUFFERING) {
+                    player.seekToDefaultPosition();
                 }
             }
 

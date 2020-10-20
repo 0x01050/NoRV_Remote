@@ -137,6 +137,8 @@ public class NoRVRTMP extends Service {
                         player.stop();
                         player.prepare(videoSource);
                         player.setPlayWhenReady(true);
+                    } else if(playbackState == Player.STATE_BUFFERING) {
+                        player.seekToDefaultPosition();
                     }
                 }
 

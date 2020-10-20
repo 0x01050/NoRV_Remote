@@ -42,6 +42,7 @@
                     android:layout_height="40dp"
                     android:background="@drawable/border"
                     android:gravity="start|center_vertical"
+                    android:hint="@string/witness_name_hint"
                     android:nextFocusDown="@id/activity_witnessType"
                     android:paddingHorizontal="8dp"
                     android:singleLine="true" />
@@ -109,10 +110,11 @@
                     android:layout_height="40dp"
                     android:background="@drawable/border"
                     android:gravity="start|center_vertical"
-                    android:paddingHorizontal="8dp"
-                    android:singleLine="true"
+                    android:hint="@string/casename_hint"
                     android:nextFocusUp="@id/activity_timezone"
-                    android:nextFocusDown="@id/activity_counsel" />
+                    android:nextFocusDown="@id/activity_counsel"
+                    android:paddingHorizontal="8dp"
+                    android:singleLine="true" />
             </LinearLayout>
 
             <LinearLayout
@@ -158,50 +160,54 @@
                     <EditText
                         android:id="@+id/activity_address_street"
                         android:layout_width="0dp"
-                        android:layout_weight="2"
                         android:layout_height="40dp"
+                        android:layout_weight="2"
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
-                        android:paddingHorizontal="8dp"
-                        android:singleLine="true"
+                        android:hint="@string/address_street_hint"
                         android:nextFocusUp="@id/activity_counsel"
-                        android:nextFocusDown="@id/activity_address_city" />
+                        android:nextFocusDown="@id/activity_address_city"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true" />
 
                     <EditText
                         android:id="@+id/activity_address_city"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
                         android:layout_height="40dp"
+                        android:layout_weight="1"
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
-                        android:paddingHorizontal="8dp"
-                        android:singleLine="true"
+                        android:hint="@string/address_city_hint"
                         android:nextFocusUp="@id/activity_address_street"
-                        android:nextFocusDown="@id/activity_address_state" />
+                        android:nextFocusDown="@id/activity_address_state"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true" />
 
                     <EditText
                         android:id="@+id/activity_address_state"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
                         android:layout_height="40dp"
+                        android:layout_weight="1"
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
-                        android:paddingHorizontal="8dp"
-                        android:singleLine="true"
+                        android:hint="@string/address_state_hint"
                         android:nextFocusUp="@id/activity_address_city"
-                        android:nextFocusDown="@id/activity_address_zip" />
+                        android:nextFocusDown="@id/activity_address_zip"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true" />
 
                     <EditText
                         android:id="@+id/activity_address_zip"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
                         android:layout_height="40dp"
+                        android:layout_weight="1"
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
-                        android:paddingHorizontal="8dp"
-                        android:singleLine="true"
+                        android:hint="@string/address_zip_hint"
                         android:nextFocusUp="@id/activity_address_state"
-                        android:nextFocusDown="@id/activity_load_deposition" />
+                        android:nextFocusDown="@id/activity_load_deposition"
+                        android:paddingHorizontal="8dp"
+                        android:singleLine="true" />
                 </LinearLayout>
 
             </LinearLayout>

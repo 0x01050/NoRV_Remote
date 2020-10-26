@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/pause_norv_player"
+    <WebView
+        android:id="@+id/pause_camera"
         android:layout_width="294dp"
         android:layout_height="196dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -71,8 +71,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@id/pause_norv_player"
-        app:layout_constraintStart_toEndOf="@id/pause_norv_player"
+        app:layout_constraintBottom_toBottomOf="@id/pause_camera"
+        app:layout_constraintStart_toEndOf="@id/pause_camera"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout

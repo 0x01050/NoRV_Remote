@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -14,29 +13,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.example.kloadingspin.KLoadingSpin;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.ext.rtmp.RtmpDataSourceFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 
 public class NoRVRTMP extends Service {
     private WindowManager mWindowManager;
@@ -97,58 +81,7 @@ public class NoRVRTMP extends Service {
                 mFloatingView.findViewById(R.id.rtmp_right_button).setVisibility(View.INVISIBLE);
             });
 
-            BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
-            TrackSelection.Factory videoTrackSelectionFactory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
-            TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-            final SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
-            final PlayerView playerView = mFloatingView.findViewById(R.id.rtmp_norv_player);
-            playerView.setPlayer(player);
-            playerView.setUseController(false);
-            playerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH);
-            RtmpDataSourceFactory rtmpDataSourceFactory = new RtmpDataSourceFactory();
-            final ExtractorMediaSource videoSource = new ExtractorMediaSource
-                    .Factory(rtmpDataSourceFactory)
-                    .createMediaSource(Uri.parse(BuildConfig.RTMP_SERVER));
-            player.prepare(videoSource);
-            player.setPlayWhenReady(true);
-            player.addListener(new Player.EventListener() {
-                @Override
-                public void onTimelineChanged(Timeline timeline, Object manifest, int reason) { }
-                @Override
-                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) { }
-                @Override
-                public void onRepeatModeChanged(int repeatMode) { }
-                @Override
-                public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) { }
-                @Override
-                public void onPositionDiscontinuity(int reason) { }
-                @Override
-                public void onPlaybackParametersChanged(PlaybackParameters playbackParameters) { }
-                @Override
-                public void onSeekProcessed() { }
-                @Override
-                public void onLoadingChanged(boolean isLoading) { }
-
-                @Override
-                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                    if (!playWhenReady) {
-                        player.setPlayWhenReady(true);
-                    } else if (playbackState == Player.STATE_ENDED) {
-                        player.stop();
-                        player.prepare(videoSource);
-                        player.setPlayWhenReady(true);
-                    } else if(playbackState == Player.STATE_BUFFERING) {
-                        player.seekToDefaultPosition();
-                    }
-                }
-
-                @Override
-                public void onPlayerError(ExoPlaybackException error) {
-                    player.stop();
-                    player.prepare(videoSource);
-                    player.setPlayWhenReady(true);
-                }
-            });
+            initCamera();
 
             mFloatingView.findViewById(R.id.rtmp_pause_deposition).setOnClickListener(view -> NoRVRTMP.this.pauseDeposition());
             mFloatingView.findViewById(R.id.rtmp_end_deposition).setOnClickListener(view -> NoRVRTMP.this.endDeposition());
@@ -162,6 +95,24 @@ public class NoRVRTMP extends Service {
         catch (Exception e) {
             stopSelf();
         }
+    }
+
+    private void initCamera()
+    {
+        WebView cameraView = mFloatingView.findViewById(R.id.service_camera);
+        WebSettings settings = cameraView.getSettings();
+        settings.setLoadsImagesAutomatically(true);
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAppCacheEnabled(true);
+        settings.setSafeBrowsingEnabled(false);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        cameraView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(cameraView, true);
+        settings.setAllowContentAccess(true);
+        settings.setAllowFileAccess(true);
+        settings.setBlockNetworkImage(false);
+        cameraView.loadUrl("file:///android_asset/camera.html");
     }
 
     final Handler handler = new Handler(Looper.getMainLooper());
@@ -186,15 +137,12 @@ public class NoRVRTMP extends Service {
                             break;
                     }
                     if(mFloatingView != null) {
-                        switch(ignorable) {
-                            case "True":
-                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(false);
-                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(false);
-                                break;
-                            default:
-                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(true);
-                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(true);
-                                break;
+                        if ("True".equals(ignorable)) {
+                            mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(false);
+                            mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(false);
+                        } else {
+                            mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(true);
+                            mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(true);
                         }
                     }
                 }

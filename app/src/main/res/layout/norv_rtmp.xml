@@ -2,17 +2,17 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_width="294dp"
+    android:layout_height="match_parent">
 
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/rtmp_norv_player"
+    <WebView
+        android:id="@+id/service_camera"
         android:layout_width="294dp"
         android:layout_height="196dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" >
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -25,9 +25,9 @@
                 android:contentDescription="@string/app_name"
                 android:src="@android:drawable/ic_media_rew"
                 android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
                 android:id="@+id/rtmp_right_button"
@@ -35,13 +35,13 @@
                 android:layout_height="40dp"
                 android:contentDescription="@string/app_name"
                 android:src="@android:drawable/ic_media_ff"
-                tools:layout_editor_absoluteX="248dp"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                tools:layout_editor_absoluteX="248dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.exoplayer2.ui.PlayerView>
+    </WebView>
 
     <ImageView
         android:id="@+id/rtmp_close_button"
@@ -59,7 +59,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rtmp_norv_player">
+        app:layout_constraintTop_toBottomOf="@id/service_camera">
 
         <Button
             android:id="@+id/rtmp_pause_deposition"

@@ -3,6 +3,7 @@
     package="com.norv.remote">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
 
@@ -13,7 +14,8 @@
         android:roundIcon="@mipmap/launcher_round"
         android:theme="@style/AppTheme"
         android:allowBackup="true"
-        android:fullBackupContent="@xml/backup_descriptor">
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:usesCleartextTraffic="true">
         <activity
             android:name="com.norv.remote.NoRVActivity"
             android:label="@string/norv_activity_title"

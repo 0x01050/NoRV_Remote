@@ -226,13 +226,10 @@ public class NoRVActivity extends AppCompatActivity {
                             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                             break;
                     }
-                    switch(ignorable) {
-                        case "True":
-                            findViewById(R.id.activity_load_deposition).setEnabled(false);
-                            break;
-                        default:
-                            findViewById(R.id.activity_load_deposition).setEnabled(true);
-                            break;
+                    if ("True".equals(ignorable)) {
+                        findViewById(R.id.activity_load_deposition).setEnabled(false);
+                    } else {
+                        findViewById(R.id.activity_load_deposition).setEnabled(true);
                     }
                 }
 

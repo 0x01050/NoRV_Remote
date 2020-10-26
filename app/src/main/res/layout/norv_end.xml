@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.exoplayer2.ui.PlayerView
-        android:id="@+id/end_norv_player"
+    <WebView
+        android:id="@+id/end_camera"
         android:layout_width="294dp"
         android:layout_height="196dp"
         app:layout_constraintStart_toStartOf="parent"

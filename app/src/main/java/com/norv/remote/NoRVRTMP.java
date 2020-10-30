@@ -90,7 +90,7 @@ public class NoRVRTMP extends Service {
             pauseSpin.startAnimation();
             pauseSpin.stopAnimation();
 
-            showWindow();
+            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
         }
         catch (Exception e) {
             stopSelf();
@@ -165,21 +165,6 @@ public class NoRVRTMP extends Service {
         handler.removeCallbacks(checkStatus);
     }
 
-    public void showWindow() {
-        if(mFloatingView != null) {
-            mFloatingView.setVisibility(View.VISIBLE);
-        }
-        handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
-    }
-    public void hideWindow() {
-        pauseSpin.stopAnimation();
-        pauseSpin.setVisibility(View.INVISIBLE);
-        if(mFloatingView != null) {
-            mFloatingView.setVisibility(View.INVISIBLE);
-        }
-        handler.removeCallbacks(checkStatus);
-    }
-
     private void pauseDeposition() {
         pauseSpin.startAnimation();
         pauseSpin.setIsVisible(true);
@@ -199,38 +184,38 @@ public class NoRVRTMP extends Service {
     }
 
     private void endDeposition() {
-        hideWindow();
         Intent endIntent = new Intent(NoRVRTMP.this, NoRVEnd.class);
         endIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(endIntent);
+        stopSelf();
     }
 
     private void gotoHomeScreen() {
-        hideWindow();
         Intent activityIntent = new Intent(NoRVRTMP.this, NoRVActivity.class);
         activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(activityIntent);
+        stopSelf();
     }
 
     private void gotoConfirmScreen() {
-        hideWindow();
         Intent confirmIntent = new Intent(NoRVRTMP.this, NoRVConfirm.class);
         confirmIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(confirmIntent);
+        stopSelf();
     }
 
     private void gotoPauseScreen() {
-        hideWindow();
         Intent pauseIntent = new Intent(NoRVRTMP.this, NoRVPause.class);
         pauseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(pauseIntent);
+        stopSelf();
     }
 }

@@ -292,11 +292,7 @@ public class NoRVActivity extends AppCompatActivity {
     }
 
     private void gotoRTMPScreen() {
-        NoRVRTMP rtmpService = NoRVRTMP.getInstance();
-        if(rtmpService != null)
-            rtmpService.showWindow();
-        else
-            startService(new Intent(NoRVActivity.this, NoRVRTMP.class));
+        startService(new Intent(NoRVActivity.this, NoRVRTMP.class));
         finish();
     }
 

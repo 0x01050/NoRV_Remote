@@ -173,11 +173,7 @@ public class NoRVPause extends AppCompatActivity {
     }
 
     private void gotoRTMPScreen() {
-        NoRVRTMP rtmpService = NoRVRTMP.getInstance();
-        if(rtmpService != null)
-            rtmpService.showWindow();
-        else
-            startService(new Intent(NoRVPause.this, NoRVRTMP.class));
+        startService(new Intent(NoRVPause.this, NoRVRTMP.class));
         finish();
     }
 

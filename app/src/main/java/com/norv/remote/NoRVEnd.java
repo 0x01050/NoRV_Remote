@@ -71,11 +71,7 @@ public class NoRVEnd extends AppCompatActivity {
     }
 
     private void cancelEndDeposition() {
-        NoRVRTMP service = NoRVRTMP.getInstance();
-        if(service != null)
-            service.showWindow();
-        else
-            startService(new Intent(NoRVEnd.this, NoRVRTMP.class));
+        startService(new Intent(NoRVEnd.this, NoRVRTMP.class));
         finish();
     }
 

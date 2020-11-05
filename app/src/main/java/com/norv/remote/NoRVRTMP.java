@@ -33,14 +33,6 @@ public class NoRVRTMP extends Service {
 
     private KLoadingSpin pauseSpin;
 
-    private static NoRVRTMP _instance = null;
-    public static NoRVRTMP getInstance() {
-        return _instance;
-    }
-    public NoRVRTMP() {
-        _instance = this;
-    }
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

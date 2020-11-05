@@ -8,7 +8,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
@@ -65,7 +67,22 @@ public class NoRVPause extends AppCompatActivity {
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccess(true);
         settings.setBlockNetworkImage(false);
+        cameraView.setWebChromeClient(new WebChromeClient()
+        {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.d("CameraView", consoleMessage.message());
+                return super.onConsoleMessage(consoleMessage);
+            }
+        });
         cameraView.loadUrl("file:///android_asset/camera.html");
+    }
+
+    private void endCamera()
+    {
+        WebView cameraView = findViewById(R.id.pause_camera);
+        cameraView.loadUrl("javascript:closeSocket();");
+        cameraView.destroy();
     }
 
     private void resumeDeposition() {
@@ -98,30 +115,30 @@ public class NoRVPause extends AppCompatActivity {
             NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
                 public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
-                    switch (status) {
-                        case NoRVConst.STOPPED:
-                            gotoHomeScreen();
-                            break;
-                        case NoRVConst.LOADED:
-                            gotoConfirmScreen();
-                            break;
-                        case NoRVConst.STARTED:
-                            gotoRTMPScreen();
-                            break;
-                        case NoRVConst.PAUSED:
-                            runOnUiThread(() -> {
+                    runOnUiThread(() -> {
+                        switch (status) {
+                            case NoRVConst.STOPPED:
+                                gotoHomeScreen();
+                                break;
+                            case NoRVConst.LOADED:
+                                gotoConfirmScreen();
+                                break;
+                            case NoRVConst.STARTED:
+                                gotoRTMPScreen();
+                                break;
+                            case NoRVConst.PAUSED:
                                 runningTimeLabel.setText(runningTime);
                                 breaksNumberLabel.setText(breaksNumber);
-                            });
-                        default:
-                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
-                            break;
-                    }
-                    if ("True".equals(ignorable)) {
-                        findViewById(R.id.pause_resume_deposition).setEnabled(false);
-                    } else {
-                        findViewById(R.id.pause_resume_deposition).setEnabled(true);
-                    }
+                            default:
+                                handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                                break;
+                        }
+                        if ("True".equals(ignorable)) {
+                            findViewById(R.id.pause_resume_deposition).setEnabled(false);
+                        } else {
+                            findViewById(R.id.pause_resume_deposition).setEnabled(true);
+                        }
+                    });
                 }
 
                 @Override
@@ -161,18 +178,21 @@ public class NoRVPause extends AppCompatActivity {
     }
 
     private void gotoHomeScreen() {
+        endCamera();
         Intent activityIntent = new Intent(NoRVPause.this, NoRVActivity.class);
         startActivity(activityIntent);
         finish();
     }
 
     private void gotoConfirmScreen() {
+        endCamera();
         Intent confirmIntent = new Intent(NoRVPause.this, NoRVConfirm.class);
         startActivity(confirmIntent);
         finish();
     }
 
     private void gotoRTMPScreen() {
+        endCamera();
         startService(new Intent(NoRVPause.this, NoRVRTMP.class));
         finish();
     }

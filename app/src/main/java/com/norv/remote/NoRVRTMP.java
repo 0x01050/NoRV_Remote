@@ -13,7 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
@@ -112,7 +114,22 @@ public class NoRVRTMP extends Service {
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccess(true);
         settings.setBlockNetworkImage(false);
+        cameraView.setWebChromeClient(new WebChromeClient()
+        {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.d("CameraView", consoleMessage.message());
+                return super.onConsoleMessage(consoleMessage);
+            }
+        });
         cameraView.loadUrl("file:///android_asset/camera.html");
+    }
+
+    private void endCamera()
+    {
+        WebView cameraView = mFloatingView.findViewById(R.id.service_camera);
+        cameraView.loadUrl("javascript:closeSocket();");
+        cameraView.destroy();
     }
 
     final Handler handler = new Handler(Looper.getMainLooper());
@@ -122,29 +139,31 @@ public class NoRVRTMP extends Service {
             NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
                 public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
-                    switch (status) {
-                        case NoRVConst.STOPPED:
-                            gotoHomeScreen();
-                            break;
-                        case NoRVConst.LOADED:
-                            gotoConfirmScreen();
-                            break;
-                        case NoRVConst.PAUSED:
-                            gotoPauseScreen();
-                            break;
-                        default:
-                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
-                            break;
-                    }
-                    if(mFloatingView != null) {
-                        if ("True".equals(ignorable)) {
-                            mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(false);
-                            mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(false);
-                        } else {
-                            mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(true);
-                            mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(true);
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        switch (status) {
+                            case NoRVConst.STOPPED:
+                                gotoHomeScreen();
+                                break;
+                            case NoRVConst.LOADED:
+                                gotoConfirmScreen();
+                                break;
+                            case NoRVConst.PAUSED:
+                                gotoPauseScreen();
+                                break;
+                            default:
+                                handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                                break;
                         }
-                    }
+                        if (mFloatingView != null) {
+                            if ("True".equals(ignorable)) {
+                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(false);
+                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(false);
+                            } else {
+                                mFloatingView.findViewById(R.id.rtmp_pause_deposition).setEnabled(true);
+                                mFloatingView.findViewById(R.id.rtmp_end_deposition).setEnabled(true);
+                            }
+                        }
+                    });
                 }
 
                 @Override
@@ -184,6 +203,7 @@ public class NoRVRTMP extends Service {
     }
 
     private void endDeposition() {
+        endCamera();
         Intent endIntent = new Intent(NoRVRTMP.this, NoRVEnd.class);
         endIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -193,6 +213,7 @@ public class NoRVRTMP extends Service {
     }
 
     private void gotoHomeScreen() {
+        endCamera();
         Intent activityIntent = new Intent(NoRVRTMP.this, NoRVActivity.class);
         activityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -202,6 +223,7 @@ public class NoRVRTMP extends Service {
     }
 
     private void gotoConfirmScreen() {
+        endCamera();
         Intent confirmIntent = new Intent(NoRVRTMP.this, NoRVConfirm.class);
         confirmIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -211,6 +233,7 @@ public class NoRVRTMP extends Service {
     }
 
     private void gotoPauseScreen() {
+        endCamera();
         Intent pauseIntent = new Intent(NoRVRTMP.this, NoRVPause.class);
         pauseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK

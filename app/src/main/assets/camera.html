@@ -6,51 +6,74 @@
   <script language="javascript" type="text/javascript">
     var wsUri = "ws://192.168.1.5:4649";
     var camera;
+    var lastUpdate = + new Date();
+    var websocket;
+
+    function closeSocket() {
+      try {
+        websocket.close();
+      } catch (e) { }
+    }
 
     function init()
     {
       camera = document.getElementById("camera");
       testWebSocket();
+      setInterval(function() {
+      	var newUpdate = + new Date();
+      	if(newUpdate - lastUpdate > 5000) {
+      	  console.log('websocket not connected');
+      	  closeSocket();
+          testWebSocket();
+      	}
+      }, 1000);
     }
 
     function testWebSocket()
     {
-      websocket = new WebSocket(wsUri);
-      websocket.onopen = function(evt) { onOpen(evt) };
-      websocket.onclose = function(evt) { onClose(evt) };
-      websocket.onmessage = function(evt) { onMessage(evt) };
-      websocket.onerror = function(evt) { onError(evt) };
+      console.log('websocket init');
+      lastUpdate = + new Date();
+      try {
+        websocket = new WebSocket(wsUri);
+        websocket.onopen = function(evt) { onOpen(evt) };
+        websocket.onclose = function(evt) { onClose(evt) };
+        websocket.onmessage = function(evt) { onMessage(evt) };
+        websocket.onerror = function(evt) { onError(evt) };
+      } catch (e) { }
     }
 
     function onOpen(evt)
     {
+      console.log('websocket open : ' + JSON.stringify(evt));
     }
 
     function onClose(evt)
     {
-      setTimeout(testWebSocket, 1000);
+      console.log('websocket close : ' + JSON.stringify(evt));
     }
 
     function blob2base64(blob, callback) {
       var reader = new FileReader();
       reader.onload = function() {
-          var dataUrl = reader.result;
-          var base64 = dataUrl.split(',')[1];
-          callback(base64);
+        var dataUrl = reader.result;
+        var base64 = dataUrl.split(',')[1];
+        callback(base64);
       };
       reader.readAsDataURL(blob);
     }
 
     function onMessage(evt)
     {
-    	blob2base64(evt.data, function(base64) {
-    		camera.src = 'data:image/jpeg;base64,' + base64;
-    	});
+      lastUpdate = + new Date();
+      blob2base64(evt.data, function(base64) {
+        camera.src = 'data:image/jpeg;base64,' + base64;
+      });
+	  websocket.send('arrived');
     }
 
     function onError(evt)
     {
-      setTimeout(testWebSocket, 1000);
+      console.log('websocket error : ' + JSON.stringify(evt));
     }
 
     function writeToScreen(message)

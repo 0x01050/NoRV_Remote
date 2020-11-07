@@ -13,12 +13,14 @@ android {
         debug {
             // My Computer IP for Debug
             buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.108.75\""
+            buildConfigField "String", "ROUTER", "\"http://192.168.108.75:8888/cgi-bin/api\""
     }
     release {
         minifyEnabled false
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         // Master IP for Product
         buildConfigField "String", "CLIENT_SERVER", "\"http://192.168.1.5\""
+        buildConfigField "String", "ROUTER", "\"http://192.168.1.1/cgi-bin/api\""
     }
 }
 buildToolsVersion '30.0.2'

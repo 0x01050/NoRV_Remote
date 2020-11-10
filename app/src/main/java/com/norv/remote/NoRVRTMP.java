@@ -2,8 +2,10 @@ package com.norv.remote;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -23,6 +25,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.example.kloadingspin.KLoadingSpin;
+
+import java.util.ArrayList;
 
 public class NoRVRTMP extends Service {
     private WindowManager mWindowManager;
@@ -84,7 +88,9 @@ public class NoRVRTMP extends Service {
             pauseSpin.startAnimation();
             pauseSpin.stopAnimation();
 
+            isRunning = true;
             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+            handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
         }
         catch (Exception e) {
             stopSelf();
@@ -125,12 +131,15 @@ public class NoRVRTMP extends Service {
     }
 
     final Handler handler = new Handler(Looper.getMainLooper());
+    boolean isRunning = true;
     final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
             NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
                 public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    if(!isRunning)
+                        return;
                     new Handler(Looper.getMainLooper()).post(() -> {
                         switch (status) {
                             case NoRVConst.STOPPED:
@@ -160,11 +169,44 @@ public class NoRVRTMP extends Service {
 
                 @Override
                 public void onFailure(String errorMsg) {
+                    if(!isRunning)
+                        return;
                     Log.e("NoRV Get Status", errorMsg);
                     handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
             });
         }
+    };
+
+    final Runnable checkRouterLive = new Runnable() {
+        @Override
+        public void run() {
+            WifiManager wifiManager = (WifiManager) NoRVRTMP.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if(!wifiManager.isWifiEnabled()) {
+                Log.e("NoRV Router Live", "Wifi is disabled");
+                gotoConnectScreen();
+                return;
+            }
+            NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
+                @Override
+                public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+                    if(!isRunning)
+                        return;
+                    handler.postDelayed(checkRouterInternet, NoRVConst.CheckRouterInternetInterval);
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    Log.e("NoRV Router Live", errorMsg);
+                    gotoConnectScreen();
+                }
+            });
+        }
+    };
+    final Runnable checkRouterInternet = () -> {
+        if(!isRunning)
+            return;
+        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
     };
 
     @Override
@@ -173,7 +215,10 @@ public class NoRVRTMP extends Service {
         if (mFloatingView != null) {
             mWindowManager.removeView(mFloatingView);
         }
+        isRunning = false;
         handler.removeCallbacks(checkStatus);
+        handler.removeCallbacks(checkRouterLive);
+        handler.removeCallbacks(checkRouterInternet);
     }
 
     private void pauseDeposition() {
@@ -231,6 +276,16 @@ public class NoRVRTMP extends Service {
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(pauseIntent);
+        stopSelf();
+    }
+
+    private void gotoConnectScreen() {
+        endCamera();
+        Intent connectIntent = new Intent(NoRVRTMP.this, NoRVConnect.class);
+        connectIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(connectIntent);
         stopSelf();
     }
 }

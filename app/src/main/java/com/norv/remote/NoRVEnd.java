@@ -1,6 +1,8 @@
 package com.norv.remote;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +19,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.kloadingspin.KLoadingSpin;
+
+import java.util.ArrayList;
 
 public class NoRVEnd extends AppCompatActivity {
     private KLoadingSpin stopSpin;
@@ -98,12 +102,15 @@ public class NoRVEnd extends AppCompatActivity {
     }
 
     final Handler handler = new Handler(Looper.getMainLooper());
+    boolean isRunning = true;
     final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
             NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
                 public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                    if(!isRunning)
+                        return;
                     runOnUiThread(() -> {
                         switch (status) {
                             case NoRVConst.STOPPED:
@@ -131,6 +138,8 @@ public class NoRVEnd extends AppCompatActivity {
 
                 @Override
                 public void onFailure(String errorMsg) {
+                    if(!isRunning)
+                        return;
                     Log.e("NoRV Get Status", errorMsg);
                     handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
@@ -138,15 +147,51 @@ public class NoRVEnd extends AppCompatActivity {
         }
     };
 
+    final Runnable checkRouterLive = new Runnable() {
+        @Override
+        public void run() {
+            WifiManager wifiManager = (WifiManager) NoRVEnd.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if(!wifiManager.isWifiEnabled()) {
+                Log.e("NoRV Router Live", "Wifi is disabled");
+                gotoConnectScreen();
+                return;
+            }
+            NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
+                @Override
+                public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+                    if(!isRunning)
+                        return;
+                    handler.postDelayed(checkRouterInternet, NoRVConst.CheckRouterInternetInterval);
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    Log.e("NoRV Router Live", errorMsg);
+                    gotoConnectScreen();
+                }
+            });
+        }
+    };
+    final Runnable checkRouterInternet = () -> {
+        if(!isRunning)
+            return;
+        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+    };
+
     @Override
     protected void onPause() {
+        isRunning = false;
         handler.removeCallbacks(checkStatus);
+        handler.removeCallbacks(checkRouterLive);
+        handler.removeCallbacks(checkRouterInternet);
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+        isRunning = true;
         handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
         hideSystemUI();
         super.onResume();
     }
@@ -183,6 +228,13 @@ public class NoRVEnd extends AppCompatActivity {
         endCamera();
         Intent pauseIntent = new Intent(NoRVEnd.this, NoRVPause.class);
         startActivity(pauseIntent);
+        finish();
+    }
+
+    private void gotoConnectScreen() {
+        endCamera();
+        Intent connectIntent = new Intent(NoRVEnd.this, NoRVConnect.class);
+        startActivity(connectIntent);
         finish();
     }
 }

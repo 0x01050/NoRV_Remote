@@ -21,12 +21,22 @@ public class NoRVApi {
         return __instance;
     }
 
-    final private AsyncHttpClient httpClient;
+    final private AsyncHttpClient checkClient;
+    final private AsyncHttpClient controlClient;
+    final private AsyncHttpClient routerClient;
 
     private NoRVApi() {
-        httpClient = new AsyncHttpClient();
-        httpClient.addHeader("Accept", "application/json");
-        httpClient.setTimeout(30000);
+        checkClient = new AsyncHttpClient();
+        checkClient.addHeader("Accept", "application/json");
+        checkClient.setTimeout(1000);
+
+        controlClient = new AsyncHttpClient();
+        controlClient.addHeader("Accept", "application/json");
+        controlClient.setTimeout(30000);
+
+        routerClient = new AsyncHttpClient();
+        routerClient.addHeader("Accept", "application/json");
+        routerClient.setTimeout(10000);
     }
 
     public interface StatusListener {
@@ -35,7 +45,7 @@ public class NoRVApi {
     }
     public void getStatus(final StatusListener listener) {
         try {
-            httpClient.get(BuildConfig.CLIENT_SERVER + "/getStatus", new AsyncHttpResponseHandler() {
+            checkClient.get(BuildConfig.CLIENT_SERVER + "/getStatus", new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
@@ -69,7 +79,7 @@ public class NoRVApi {
     }
     public void controlDeposition(String action, RequestParams params, final ControlListener listener) {
         try {
-            httpClient.post(BuildConfig.CLIENT_SERVER + "/" + action, params, new AsyncHttpResponseHandler() {
+            controlClient.post(BuildConfig.CLIENT_SERVER + "/" + action, params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
@@ -97,53 +107,50 @@ public class NoRVApi {
         }
     }
 
-    public interface RouterLiveListener {
-        void onSuccess();
-        void onFailure();
+    public interface RouterListener {
+        void onSuccess(ArrayList<RouterModel> routers);
+        void onFailure(String errorMsg);
     }
-    public void checkRouterLive(final RouterLiveListener listener) {
+    public void checkRouterLive(final RouterListener listener) {
         try {
-            httpClient.get(BuildConfig.ROUTER + "/router/hello", new AsyncHttpResponseHandler() {
+            checkClient.get(BuildConfig.ROUTER + "/router/hello", new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
                         String resp = new String(responseBody, StandardCharsets.UTF_8);
                         JSONObject respObj = new JSONObject(resp);
                         if(respObj.getInt("code") == 0) {
-                            listener.onSuccess();
+                            listener.onSuccess(null);
                         } else {
-                            listener.onFailure();
+                            String msg = respObj.optString("msg", "Error");
+                            listener.onFailure(msg);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        listener.onFailure();
+                        listener.onFailure("Invalid Response");
                     }
                 }
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure();
+                    listener.onFailure("Network Error");
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            listener.onFailure();
+            listener.onFailure("Network Error");
         }
     }
 
-    public interface RouterListener {
-        void onSuccess(ArrayList<RouterModel> routers);
-        void onFailure(String errorMsg);
-    }
     public void loginRouter(String pwd, final RouterListener listener) {
         try {
             RequestParams params = new RequestParams();
             params.add("pwd", pwd);
-            httpClient.post(BuildConfig.ROUTER + "/router/login", params, new AsyncHttpResponseHandler() {
+            routerClient.post(BuildConfig.ROUTER + "/router/login", params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
-                        httpClient.removeHeader("Authorization");
+                        routerClient.removeHeader("Authorization");
                         String resp = new String(responseBody, StandardCharsets.UTF_8);
                         JSONObject respObj = new JSONObject(resp);
                         int code = respObj.getInt("code");
@@ -153,7 +160,7 @@ public class NoRVApi {
                                 listener.onFailure("Token is missing");
                             }
                             else {
-                                httpClient.addHeader("Authorization", token);
+                                routerClient.addHeader("Authorization", token);
                                 listener.onSuccess(null);
                             }
                         } else {
@@ -192,7 +199,7 @@ public class NoRVApi {
             RequestParams params = new RequestParams();
             params.add("pwd", pwd);
 
-            httpClient.post(BuildConfig.ROUTER + "/repeater/scan", params, new AsyncHttpResponseHandler() {
+            routerClient.post(BuildConfig.ROUTER + "/repeater/scan", params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
@@ -212,7 +219,7 @@ public class NoRVApi {
                         } else {
                             String msg = respObj.optString("msg", "Error");
                             if(code == -1) {
-                                httpClient.removeHeader("Authorization");
+                                routerClient.removeHeader("Authorization");
                             }
                             listener.onFailure(msg);
                         }
@@ -239,7 +246,7 @@ public class NoRVApi {
             params.add("ssid", ssid);
             params.add("key", pwd);
 
-            httpClient.post(BuildConfig.ROUTER + "/repeater/join", params, new AsyncHttpResponseHandler() {
+            routerClient.post(BuildConfig.ROUTER + "/repeater/join", params, new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
@@ -251,7 +258,7 @@ public class NoRVApi {
                         else {
                             String msg = respObj.optString("msg", "Error");
                             if(code == -1) {
-                                httpClient.removeHeader("Authorization");
+                                routerClient.removeHeader("Authorization");
                             }
                             listener.onFailure(msg);
                         }

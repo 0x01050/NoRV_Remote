@@ -1,9 +1,11 @@
 package com.norv.remote;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,8 +29,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.example.kloadingspin.KLoadingSpin;
 import com.loopj.android.http.RequestParams;
 
+import java.util.ArrayList;
+
 public class NoRVActivity extends AppCompatActivity {
-    private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST = 1998;
     private Menu optionsMenu = null;
 
     private EditText witnessName = null;
@@ -193,7 +196,7 @@ public class NoRVActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST && optionsMenu != null && Settings.canDrawOverlays(this)) {
+        if (requestCode == NoRVConst.SYSTEM_OVERLAY_PERMISSION_GRANT && optionsMenu != null && Settings.canDrawOverlays(this)) {
             optionsMenu.removeItem(R.id.search);
             hideSystemUI();
         }
@@ -202,39 +205,46 @@ public class NoRVActivity extends AppCompatActivity {
     private void askPermission() {
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                 Uri.parse("package:" + getPackageName()));
-        startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST);
+        startActivityForResult(intent, NoRVConst.SYSTEM_OVERLAY_PERMISSION_GRANT);
     }
 
     final Handler handler = new Handler(Looper.getMainLooper());
+    boolean isRunning = true;
     final Runnable checkStatus = new Runnable() {
         @Override
         public void run() {
             NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
                 @Override
                 public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
-                    switch (status) {
-                        case NoRVConst.LOADED:
-                            gotoConfirmScreen();
-                            break;
-                        case NoRVConst.STARTED:
-                            gotoRTMPScreen();
-                            break;
-                        case NoRVConst.PAUSED:
-                            gotoPauseScreen();
-                            break;
-                        default:
-                            handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
-                            break;
-                    }
-                    if ("True".equals(ignorable)) {
-                        findViewById(R.id.activity_load_deposition).setEnabled(false);
-                    } else {
-                        findViewById(R.id.activity_load_deposition).setEnabled(true);
-                    }
+                    if(!isRunning)
+                        return;
+                    runOnUiThread(() -> {
+                        switch (status) {
+                            case NoRVConst.LOADED:
+                                gotoConfirmScreen();
+                                break;
+                            case NoRVConst.STARTED:
+                                gotoRTMPScreen();
+                                break;
+                            case NoRVConst.PAUSED:
+                                gotoPauseScreen();
+                                break;
+                            default:
+                                handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+                                break;
+                        }
+                        if ("True".equals(ignorable)) {
+                            findViewById(R.id.activity_load_deposition).setEnabled(false);
+                        } else {
+                            findViewById(R.id.activity_load_deposition).setEnabled(true);
+                        }
+                    });
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
+                    if(!isRunning)
+                        return;
                     Log.e("NoRV Get Status", errorMsg);
                     handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
                 }
@@ -242,15 +252,52 @@ public class NoRVActivity extends AppCompatActivity {
         }
     };
 
+    final Runnable checkRouterLive = new Runnable() {
+        @Override
+        public void run() {
+            WifiManager wifiManager = (WifiManager) NoRVActivity.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if(!wifiManager.isWifiEnabled()) {
+                Log.e("NoRV Router Live", "Wifi is disabled");
+                gotoConnectScreen();
+                return;
+            }
+            NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
+                @Override
+                public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+                    if(!isRunning)
+                        return;
+                    handler.postDelayed(checkRouterInternet, NoRVConst.CheckRouterInternetInterval);
+                }
+
+                @Override
+                public void onFailure(String errorMsg) {
+                    Log.e("NoRV Router Live", errorMsg);
+                    gotoConnectScreen();
+                }
+            });
+        }
+    };
+    final Runnable checkRouterInternet = () -> {
+        if(!isRunning)
+            return;
+        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+    };
+
     @Override
     protected void onPause() {
+        isRunning = false;
         handler.removeCallbacks(checkStatus);
+        handler.removeCallbacks(checkRouterLive);
+        handler.removeCallbacks(checkRouterInternet);
         super.onPause();
     }
 
     @Override
     protected void onResume() {
+        isRunning = true;
         handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
+        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+
         hideSystemUI();
         super.onResume();
     }
@@ -299,6 +346,12 @@ public class NoRVActivity extends AppCompatActivity {
     private void gotoPauseScreen() {
         Intent pauseIntent = new Intent(NoRVActivity.this, NoRVPause.class);
         startActivity(pauseIntent);
+        finish();
+    }
+
+    private void gotoConnectScreen() {
+        Intent connectIntent = new Intent(NoRVActivity.this, NoRVConnect.class);
+        startActivity(connectIntent);
         finish();
     }
 

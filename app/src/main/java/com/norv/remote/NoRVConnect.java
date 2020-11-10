@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -142,7 +143,8 @@ public class NoRVConnect extends AppCompatActivity {
             startActivityForResult(internetIntent, NoRVConst.INTERNET_PERMISSION_GRANT);
             return;
         }
-        wifiManager.setWifiEnabled(true);
+        if(!wifiManager.isWifiEnabled())
+            wifiManager.setWifiEnabled(true);
         ConnectToNetworkWEP(password);
     }
 
@@ -161,40 +163,44 @@ public class NoRVConnect extends AppCompatActivity {
     public void ConnectToNetworkWEP(String password) {
         try {
             WifiManager wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                connectSpin.stopAnimation();
-                connectSpin.setVisibility(View.INVISIBLE);
-                animTick = -1;
-
-                return;
-            }
-
-            List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-            for( WifiConfiguration i : list ) {
-                if(i.SSID != null && i.SSID.equals("\"" + NoRVConst.Router_SSID + "\"")) {
-                    wifiManager.disconnect();
-                    wifiManager.enableNetwork(i.networkId, true);
-                    if (!wifiManager.reconnect()) {
-                        wifiManager.reassociate();
+            WifiInfo cNet = wifiManager.getConnectionInfo();
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+                boolean connected = false;
+                for( WifiConfiguration i : list ) {
+                    if(i.SSID != null && i.SSID.equals("\"" + NoRVConst.Router_SSID + "\"")) {
+                        Log.e("NoRV Router Now", i.SSID);
+                        if(cNet == null || !i.SSID.equals(cNet.getSSID()))
+                        {
+                            wifiManager.disconnect();
+                            if(cNet != null && cNet.getNetworkId() != -1) {
+                                Log.e("NoRV Router Prev", cNet.getSSID());
+                                wifiManager.disableNetwork(cNet.getNetworkId());
+                                wifiManager.removeNetwork(cNet.getNetworkId());
+                            }
+                        }
+                        wifiManager.enableNetwork(i.networkId, true);
+                        wifiManager.reconnect();
+                        connected = true;
+                        break;
                     }
-                    break;
+                }
+                if(connected) {
+                    //WiFi Connection success, return true
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(NoRVConst.Router_PWD_Key, password);
+                    editor.apply();
+                    return;
                 }
             }
-
-            //WiFi Connection success, return true
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(NoRVConst.Router_PWD_Key, password);
-            editor.apply();
         } catch (Exception ex) {
             System.out.println(Arrays.toString(ex.getStackTrace()));
-
-            connectSpin.stopAnimation();
-            connectSpin.setVisibility(View.INVISIBLE);
-            animTick = -1;
         }
 
+        connectSpin.stopAnimation();
+        connectSpin.setVisibility(View.INVISIBLE);
+        animTick = -1;
     }
 
     private void gotoHomeScreen() {
@@ -210,10 +216,15 @@ public class NoRVConnect extends AppCompatActivity {
         public void run() {
             if(animTick >= 0) {
                 animTick ++;
-                if(animTick > 50) {
+                if(animTick > 30) {
                     connectSpin.stopAnimation();
                     connectSpin.setVisibility(View.INVISIBLE);
                     animTick = -1;
+
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove(NoRVConst.Router_PWD_Key);
+                    editor.apply();
                 }
             }
             WifiManager wifiManager = (WifiManager) NoRVConnect.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);

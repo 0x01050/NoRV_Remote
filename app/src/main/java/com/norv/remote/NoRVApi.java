@@ -4,6 +4,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -24,11 +25,13 @@ public class NoRVApi {
     final private AsyncHttpClient checkClient;
     final private AsyncHttpClient controlClient;
     final private AsyncHttpClient routerClient;
+    final private AsyncHttpClient googleClient;
 
     private NoRVApi() {
         checkClient = new AsyncHttpClient();
         checkClient.addHeader("Accept", "application/json");
-        checkClient.setTimeout(1000);
+        checkClient.setTimeout(2000);
+
 
         controlClient = new AsyncHttpClient();
         controlClient.addHeader("Accept", "application/json");
@@ -36,7 +39,10 @@ public class NoRVApi {
 
         routerClient = new AsyncHttpClient();
         routerClient.addHeader("Accept", "application/json");
-        routerClient.setTimeout(10000);
+        routerClient.setTimeout(15000);
+
+        googleClient = new AsyncHttpClient();
+        googleClient.setEnableRedirects(true);
     }
 
     public interface StatusListener {
@@ -63,7 +69,8 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
 
             });
@@ -97,7 +104,8 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
 
             });
@@ -133,7 +141,36 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            listener.onFailure("Network Error");
+        }
+    }
+
+    public void checkRouterInternet(final RouterListener listener) {
+        try {
+            googleClient.get(NoRVConst.Router_Internet_Check_Url, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    try {
+                        if(statusCode == 200)
+                            listener.onSuccess(null);
+                        else
+                            listener.onFailure(new String(responseBody, StandardCharsets.UTF_8));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        listener.onFailure("Invalid Response");
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
             });
         } catch (Exception e) {
@@ -175,7 +212,8 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
             });
         } catch (Exception e) {
@@ -185,19 +223,28 @@ public class NoRVApi {
     }
 
     public static class RouterModel {
-        public String mac;
-        public String ssid;
-        public int channel;
-        public RouterModel(String mac, String ssid, int channel) {
+        public final String mac;
+        public final String ssid;
+        public final int channel;
+        public final String caps;
+
+        public RouterModel(String mac, String ssid, int channel, String caps) {
             this.mac = mac;
             this.ssid = ssid;
             this.channel = channel;
+            this.caps = caps;
+        }
+
+        @NotNull
+        public String toString() {
+            if(ssid == null)
+                return "";
+            return ssid;
         }
     }
-    public void scanRouters(String pwd, final RouterListener listener) {
+    public void scanRouters(final RouterListener listener) {
         try {
             RequestParams params = new RequestParams();
-            params.add("pwd", pwd);
 
             routerClient.post(BuildConfig.ROUTER + "/repeater/scan", params, new AsyncHttpResponseHandler() {
                 @Override
@@ -213,7 +260,8 @@ public class NoRVApi {
                             ArrayList<RouterModel> routerList = new ArrayList<>();
                             for(int i = 0; i < wifis.length(); i ++) {
                                 JSONObject wifi = wifis.getJSONObject(i);
-                                routerList.add(new RouterModel(wifi.getString("mac"), wifi.getString("ssid"), wifi.getInt("channel")));
+                                if(NoRVConst.Router_Default_Device.equals(wifi.getString("device")) && NoRVConst.Router_Default_Encrypt.equals(wifi.getString("encrypt")))
+                                    routerList.add(new RouterModel(wifi.getString("mac"), wifi.getString("ssid"), wifi.getInt("channel"), wifi.getString("caps")));
                             }
                             listener.onSuccess(routerList);
                         } else {
@@ -231,7 +279,8 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
             });
         } catch (Exception e) {
@@ -240,11 +289,17 @@ public class NoRVApi {
         }
     }
 
-    public void joinRouter(String ssid, String pwd, final RouterListener listener) {
+    public void joinRouter(String ssid, String mac, int channel, String caps, String pwd, final RouterListener listener) {
         try {
             RequestParams params = new RequestParams();
             params.add("ssid", ssid);
             params.add("key", pwd);
+            params.add("save2uci", String.valueOf(true));
+            params.add("channel", String.valueOf(channel));
+            params.add("mac", mac);
+            params.add("caps", caps);
+            params.add("device", NoRVConst.Router_Default_Device);
+            params.add("encrypt", NoRVConst.Router_Default_Encrypt);
 
             routerClient.post(BuildConfig.ROUTER + "/repeater/join", params, new AsyncHttpResponseHandler() {
                 @Override
@@ -270,7 +325,8 @@ public class NoRVApi {
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    listener.onFailure("Network Error");
+                    error.printStackTrace();
+                    listener.onFailure("Network Failure");
                 }
             });
         } catch (Exception e) {

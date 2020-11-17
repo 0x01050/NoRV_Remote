@@ -33,6 +33,11 @@
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".NoRVInternet"
+            android:label="@string/norv_internet_title"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".NoRVActivity"
             android:label="@string/norv_activity_title"
             android:screenOrientation="landscape"

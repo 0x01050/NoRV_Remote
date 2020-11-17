@@ -19,4 +19,7 @@ public class NoRVConst {
 
     final public static String Router_SSID = "NORV-CENTER";
     final public static String Router_PWD_Key = "router_password";
+    final public static String Router_Internet_Check_Url =  "https://google.com";
+    final public static String Router_Default_Device = "radio1";
+    final public static String Router_Default_Encrypt = "psk2";
 }

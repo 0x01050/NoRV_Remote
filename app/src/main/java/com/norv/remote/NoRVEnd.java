@@ -80,6 +80,7 @@ public class NoRVEnd extends AppCompatActivity {
         NoRVApi.getInstance().controlDeposition("stopDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
+                Log.e("NoRV stopDeposition", respMsg);
             }
 
             @Override
@@ -156,6 +157,7 @@ public class NoRVEnd extends AppCompatActivity {
                 gotoConnectScreen();
                 return;
             }
+
             NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
                 @Override
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
@@ -172,11 +174,20 @@ public class NoRVEnd extends AppCompatActivity {
             });
         }
     };
-    final Runnable checkRouterInternet = () -> {
-        if(!isRunning)
-            return;
-        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
-    };
+    final Runnable checkRouterInternet = () -> NoRVApi.getInstance().checkRouterInternet(new NoRVApi.RouterListener() {
+        @Override
+        public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+            if (!isRunning)
+                return;
+            handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+        }
+
+        @Override
+        public void onFailure(String errorMsg) {
+            Log.e("NoRV Internet", errorMsg);
+            gotoInternetScreen();
+        }
+    });
 
     @Override
     protected void onPause() {
@@ -234,6 +245,13 @@ public class NoRVEnd extends AppCompatActivity {
     private void gotoConnectScreen() {
         endCamera();
         Intent connectIntent = new Intent(NoRVEnd.this, NoRVConnect.class);
+        startActivity(connectIntent);
+        finish();
+    }
+
+    private void gotoInternetScreen() {
+        endCamera();
+        Intent connectIntent = new Intent(NoRVEnd.this, NoRVInternet.class);
         startActivity(connectIntent);
         finish();
     }

@@ -43,9 +43,11 @@
                     android:background="@drawable/border"
                     android:gravity="start|center_vertical"
                     android:hint="@string/witness_name_hint"
+                    android:inputType="text"
                     android:nextFocusDown="@id/activity_witnessType"
                     android:paddingHorizontal="8dp"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:importantForAutofill="no" />
             </LinearLayout>
 
             <LinearLayout
@@ -111,10 +113,12 @@
                     android:background="@drawable/border"
                     android:gravity="start|center_vertical"
                     android:hint="@string/casename_hint"
+                    android:inputType="text"
                     android:nextFocusUp="@id/activity_timezone"
                     android:nextFocusDown="@id/activity_counsel"
                     android:paddingHorizontal="8dp"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:importantForAutofill="no" />
             </LinearLayout>
 
             <LinearLayout
@@ -165,10 +169,12 @@
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
                         android:hint="@string/address_street_hint"
+                        android:inputType="text"
                         android:nextFocusUp="@id/activity_counsel"
                         android:nextFocusDown="@id/activity_address_city"
                         android:paddingHorizontal="8dp"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:importantForAutofill="no" />
 
                     <EditText
                         android:id="@+id/activity_address_city"
@@ -178,10 +184,12 @@
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
                         android:hint="@string/address_city_hint"
+                        android:inputType="text"
                         android:nextFocusUp="@id/activity_address_street"
                         android:nextFocusDown="@id/activity_address_state"
                         android:paddingHorizontal="8dp"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:importantForAutofill="no" />
 
                     <EditText
                         android:id="@+id/activity_address_state"
@@ -191,10 +199,12 @@
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
                         android:hint="@string/address_state_hint"
+                        android:inputType="text"
                         android:nextFocusUp="@id/activity_address_city"
                         android:nextFocusDown="@id/activity_address_zip"
                         android:paddingHorizontal="8dp"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:importantForAutofill="no" />
 
                     <EditText
                         android:id="@+id/activity_address_zip"
@@ -204,10 +214,12 @@
                         android:background="@drawable/border"
                         android:gravity="start|center_vertical"
                         android:hint="@string/address_zip_hint"
+                        android:inputType="text"
                         android:nextFocusUp="@id/activity_address_state"
                         android:nextFocusDown="@id/activity_load_deposition"
                         android:paddingHorizontal="8dp"
-                        android:singleLine="true" />
+                        android:singleLine="true"
+                        android:importantForAutofill="no" />
                 </LinearLayout>
 
             </LinearLayout>

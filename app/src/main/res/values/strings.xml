@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">NoRV Remote</string>
-    <string name="norv_loading_title">NoRV Loading</string>
     <string name="norv_connect_title">NoRV Connect</string>
+    <string name="norv_internet_title">NoRV Internet</string>
     <string name="norv_activity_title">NoRV Remote</string>
     <string name="norv_confirm_title">NoRV Confirm</string>
     <string name="norv_pause_title">NoRV Paused</string>
@@ -27,15 +27,17 @@
     <string name="norv_pause_alert">You are off the record.\nNo Audio or video is being recorded!</string>
     <string name="norv_pause_totaltime">Time on the record:</string>
     <string name="norv_pause_breaks">Number of Breaks:</string>
-    <string name="norv_pause_unknown">?</string>
+    <string name="norv_pause_unknown">\?</string>
     <string name="end_deposition_title">End Deposition</string>
     <string name="resume_deposition_title">Go Back On The Record</string>
     <string name="conclude_deposition_title">Conclude the deposition?</string>
     <string name="yes_title">Yes</string>
     <string name="no_title">No</string>
-    <string name="loading_title">Checking Router ...</string>
+    <string name="loading_title">Checking Router …</string>
     <string name="connect_title">You are not connected to the NoRV Server.\nTap and connect to the connection below.</string>
     <string name="connect_button_title">Tap here to connect to NoRV-Center</string>
+    <string name="internet_title">NoRV-Center is not connected to the internet!\nPlease select a Wifi connection.</string>
+    <string name="internet_button_title">Tap here to connect to the Internet</string>
 
     <string name="confirmation_dialog_title">IMPORTANT! This will start the deposition. Make sure everyone is ready.</string>
     <string name="confirmation_dialog_message">Make sure the camera is pointed directly at the witness,\nALL the mics are outside the encloser and 2 feet in front of their designated speakers and inform all the attendees that you are starting then tap below.</string>

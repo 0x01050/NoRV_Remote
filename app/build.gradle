@@ -45,4 +45,5 @@ dependencies {
 
     // For Loading Spin
     implementation 'com.github.Nikoloutsos:KLoadingSpin:1.1.0'
+    implementation 'org.jetbrains:annotations:16.0.1'
 }

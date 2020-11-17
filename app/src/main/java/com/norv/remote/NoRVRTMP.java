@@ -187,6 +187,7 @@ public class NoRVRTMP extends Service {
                 gotoConnectScreen();
                 return;
             }
+
             NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
                 @Override
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
@@ -203,11 +204,20 @@ public class NoRVRTMP extends Service {
             });
         }
     };
-    final Runnable checkRouterInternet = () -> {
-        if(!isRunning)
-            return;
-        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
-    };
+    final Runnable checkRouterInternet = () -> NoRVApi.getInstance().checkRouterInternet(new NoRVApi.RouterListener() {
+        @Override
+        public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+            if (!isRunning)
+                return;
+            handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+        }
+
+        @Override
+        public void onFailure(String errorMsg) {
+            Log.e("NoRV Internet", errorMsg);
+            gotoInternetScreen();
+        }
+    });
 
     @Override
     public void onDestroy() {
@@ -228,6 +238,7 @@ public class NoRVRTMP extends Service {
         NoRVApi.getInstance().controlDeposition("pauseDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
+                Log.e("NoRV pauseDeposition", respMsg);
             }
 
             @Override
@@ -282,6 +293,16 @@ public class NoRVRTMP extends Service {
     private void gotoConnectScreen() {
         endCamera();
         Intent connectIntent = new Intent(NoRVRTMP.this, NoRVConnect.class);
+        connectIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(connectIntent);
+        stopSelf();
+    }
+
+    private void gotoInternetScreen() {
+        endCamera();
+        Intent connectIntent = new Intent(NoRVRTMP.this, NoRVInternet.class);
         connectIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK
                 | Intent.FLAG_ACTIVITY_NEW_TASK);

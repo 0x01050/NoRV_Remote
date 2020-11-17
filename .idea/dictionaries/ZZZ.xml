@@ -8,10 +8,18 @@
       <w>norv</w>
       <w>norvplayer</w>
       <w>norvremote</w>
+      <w>onclose</w>
+      <w>onerror</w>
+      <w>onload</w>
+      <w>onmessage</w>
+      <w>onopen</w>
       <w>rtmp</w>
       <w>rvrtmp</w>
+      <w>ssid</w>
       <w>successed</w>
       <w>totaltime</w>
+      <w>websocket</w>
+      <w>wifis</w>
     </words>
   </dictionary>
 </component>

@@ -3,37 +3,37 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#037558">
+    android:background="#08567A">
 
     <TextView
-        android:id="@+id/connect_label"
+        android:id="@+id/internet_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/connect_title"
+        android:text="@string/internet_title"
         android:textAlignment="center"
         android:textColor="#fff"
         android:textSize="36sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/connect_button"
+        app:layout_constraintBottom_toTopOf="@id/internet_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/connect_button"
+        android:id="@+id/internet_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/connect_button_title"
+        android:text="@string/internet_button_title"
         android:textAlignment="center"
         android:textSize="30sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/connect_label" />
+        app:layout_constraintTop_toBottomOf="@id/internet_label" />
 
     <com.example.kloadingspin.KLoadingSpin
-        android:id="@+id/norv_connect_spin"
+        android:id="@+id/norv_internet_spin"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clickable="true"

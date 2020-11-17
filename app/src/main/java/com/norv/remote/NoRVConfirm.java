@@ -116,6 +116,7 @@ public class NoRVConfirm extends AppCompatActivity {
         NoRVApi.getInstance().controlDeposition("cancelDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
+                Log.e("NoRV cancelDeposition", respMsg);
             }
 
             @Override
@@ -145,6 +146,7 @@ public class NoRVConfirm extends AppCompatActivity {
         NoRVApi.getInstance().controlDeposition("startDeposition", null, new NoRVApi.ControlListener() {
             @Override
             public void onSuccess(String respMsg) {
+                Log.e("NoRV startDeposition", respMsg);
             }
 
             @Override
@@ -216,6 +218,7 @@ public class NoRVConfirm extends AppCompatActivity {
                 gotoConnectScreen();
                 return;
             }
+
             NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
                 @Override
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
@@ -232,11 +235,20 @@ public class NoRVConfirm extends AppCompatActivity {
             });
         }
     };
-    final Runnable checkRouterInternet = () -> {
-        if(!isRunning)
-            return;
-        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
-    };
+    final Runnable checkRouterInternet = () -> NoRVApi.getInstance().checkRouterInternet(new NoRVApi.RouterListener() {
+        @Override
+        public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+            if (!isRunning)
+                return;
+            handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+        }
+
+        @Override
+        public void onFailure(String errorMsg) {
+            Log.e("NoRV Internet", errorMsg);
+            gotoInternetScreen();
+        }
+    });
 
     @Override
     protected void onPause() {
@@ -293,6 +305,13 @@ public class NoRVConfirm extends AppCompatActivity {
     private void gotoConnectScreen() {
         endCamera();
         Intent connectIntent = new Intent(NoRVConfirm.this, NoRVConnect.class);
+        startActivity(connectIntent);
+        finish();
+    }
+
+    private void gotoInternetScreen() {
+        endCamera();
+        Intent connectIntent = new Intent(NoRVConfirm.this, NoRVInternet.class);
         startActivity(connectIntent);
         finish();
     }

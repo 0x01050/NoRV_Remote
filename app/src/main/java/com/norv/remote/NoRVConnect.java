@@ -14,9 +14,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -36,6 +38,7 @@ public class NoRVConnect extends AppCompatActivity {
     TextView connectButton;
     KLoadingSpin connectSpin;
     int animTick = -1;
+    AlertDialog currentAlert = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +50,8 @@ public class NoRVConnect extends AppCompatActivity {
         connectButton = findViewById(R.id.connect_button);
         connectButton.setOnClickListener(view -> {
             if (!permissionsGranted()) {
+                if(animTick >= 0)
+                    stopAnimation();
                 return;
             }
 
@@ -58,19 +63,26 @@ public class NoRVConnect extends AppCompatActivity {
                 alert.setTitle("NoRV Remote");
                 alert.setMessage("Input password for NoRV-Center Router");
 
-                final EditText input = new EditText(this);
-                alert.setView(input);
+                LinearLayout inputLayout = new LinearLayout(NoRVConnect.this);
+                inputLayout.setOrientation(LinearLayout.VERTICAL);
+
+                final EditText input = new EditText(NoRVConnect.this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+                inputLayout.addView(input);
+                inputLayout.setPadding(25, 0, 25, 0);
+                alert.setView(inputLayout);
 
                 alert.setPositiveButton("Ok", (dialog, whichButton) -> {
+                    currentAlert = null;
                     if (input.getText().toString().isEmpty())
                         return;
                     ConnectWifi(input.getText().toString());
                 });
 
-                alert.setNegativeButton("Cancel", (dialog, whichButton) -> {
-                });
+                alert.setNegativeButton("Cancel", (dialog, whichButton) -> currentAlert = null);
 
-                alert.show();
+                currentAlert = alert.show();
             } else {
                 ConnectWifi(password);
             }
@@ -79,12 +91,22 @@ public class NoRVConnect extends AppCompatActivity {
         if (!permissionsGranted()) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, NoRVConst.LOCATION_PERMISSION_GRANT);
         } else {
-            connectSpin.startAnimation();
-            connectSpin.setIsVisible(true);
-            connectSpin.setVisibility(View.VISIBLE);
-            animTick = 0;
+            startAnimation();
             new Handler(Looper.getMainLooper()).postDelayed(() -> connectButton.performClick(), 1000);
         }
+    }
+
+    private void startAnimation() {
+        connectSpin.startAnimation();
+        connectSpin.setIsVisible(true);
+        connectSpin.setVisibility(View.VISIBLE);
+        animTick = 0;
+    }
+
+    private void stopAnimation() {
+        connectSpin.stopAnimation();
+        connectSpin.setVisibility(View.INVISIBLE);
+        animTick = -1;
     }
 
     private Boolean permissionsGranted() {
@@ -125,10 +147,7 @@ public class NoRVConnect extends AppCompatActivity {
     private void ConnectWifi(String password) {
 
         if(animTick < 0) {
-            connectSpin.startAnimation();
-            connectSpin.setIsVisible(true);
-            connectSpin.setVisibility(View.VISIBLE);
-            animTick = 0;
+            startAnimation();
         }
 
         WifiConfiguration conf = new WifiConfiguration();
@@ -170,14 +189,12 @@ public class NoRVConnect extends AppCompatActivity {
                 for( WifiConfiguration i : list ) {
                     if(i.SSID != null && i.SSID.equals("\"" + NoRVConst.Router_SSID + "\"")) {
                         Log.e("NoRV Router Now", i.SSID);
-                        if(cNet == null || !i.SSID.equals(cNet.getSSID()))
+                        if(cNet != null && cNet.getNetworkId() != -1)
                         {
                             wifiManager.disconnect();
-                            if(cNet != null && cNet.getNetworkId() != -1) {
+                            if(cNet.getSSID() != null)
                                 Log.e("NoRV Router Prev", cNet.getSSID());
-                                wifiManager.disableNetwork(cNet.getNetworkId());
-                                wifiManager.removeNetwork(cNet.getNetworkId());
-                            }
+                            wifiManager.removeNetwork(cNet.getNetworkId());
                         }
                         wifiManager.enableNetwork(i.networkId, true);
                         wifiManager.reconnect();
@@ -198,9 +215,7 @@ public class NoRVConnect extends AppCompatActivity {
             System.out.println(Arrays.toString(ex.getStackTrace()));
         }
 
-        connectSpin.stopAnimation();
-        connectSpin.setVisibility(View.INVISIBLE);
-        animTick = -1;
+        stopAnimation();
     }
 
     private void gotoHomeScreen() {
@@ -217,9 +232,7 @@ public class NoRVConnect extends AppCompatActivity {
             if(animTick >= 0) {
                 animTick ++;
                 if(animTick > 30) {
-                    connectSpin.stopAnimation();
-                    connectSpin.setVisibility(View.INVISIBLE);
-                    animTick = -1;
+                    stopAnimation();
 
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -233,6 +246,7 @@ public class NoRVConnect extends AppCompatActivity {
                 handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
                 return;
             }
+
             NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
                 @Override
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
@@ -254,6 +268,9 @@ public class NoRVConnect extends AppCompatActivity {
     protected void onPause() {
         isRunning = false;
         handler.removeCallbacks(checkRouterLive);
+
+        if(currentAlert != null)
+            currentAlert.dismiss();
         super.onPause();
     }
 
@@ -261,6 +278,7 @@ public class NoRVConnect extends AppCompatActivity {
     protected void onResume() {
         isRunning = true;
         handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+        currentAlert = null;
         hideSystemUI();
         super.onResume();
     }

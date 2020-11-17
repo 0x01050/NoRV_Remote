@@ -162,6 +162,7 @@ public class NoRVActivity extends AppCompatActivity {
             NoRVApi.getInstance().controlDeposition("loadDeposition", params, new NoRVApi.ControlListener() {
                 @Override
                 public void onSuccess(String respMsg) {
+                    Log.e("NoRV loadDeposition", respMsg);
                 }
 
                 @Override
@@ -261,6 +262,7 @@ public class NoRVActivity extends AppCompatActivity {
                 gotoConnectScreen();
                 return;
             }
+
             NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
                 @Override
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
@@ -277,11 +279,20 @@ public class NoRVActivity extends AppCompatActivity {
             });
         }
     };
-    final Runnable checkRouterInternet = () -> {
-        if(!isRunning)
-            return;
-        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
-    };
+    final Runnable checkRouterInternet = () -> NoRVApi.getInstance().checkRouterInternet(new NoRVApi.RouterListener() {
+        @Override
+        public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+            if (!isRunning)
+                return;
+            handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+        }
+
+        @Override
+        public void onFailure(String errorMsg) {
+            Log.e("NoRV Internet", errorMsg);
+            gotoInternetScreen();
+        }
+    });
 
     @Override
     protected void onPause() {
@@ -351,6 +362,12 @@ public class NoRVActivity extends AppCompatActivity {
 
     private void gotoConnectScreen() {
         Intent connectIntent = new Intent(NoRVActivity.this, NoRVConnect.class);
+        startActivity(connectIntent);
+        finish();
+    }
+
+    private void gotoInternetScreen() {
+        Intent connectIntent = new Intent(NoRVActivity.this, NoRVInternet.class);
         startActivity(connectIntent);
         finish();
     }

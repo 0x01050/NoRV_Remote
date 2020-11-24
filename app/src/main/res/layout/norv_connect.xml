@@ -7,8 +7,10 @@
 
     <TextView
         android:id="@+id/connect_label"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
         android:text="@string/connect_title"
         android:textAlignment="center"
         android:textColor="#fff"

@@ -75,12 +75,17 @@ public class NoRVConnect extends AppCompatActivity {
 
                 alert.setPositiveButton("Ok", (dialog, whichButton) -> {
                     currentAlert = null;
-                    if (input.getText().toString().isEmpty())
+                    if (input.getText().toString().isEmpty()) {
+                        stopAnimation();
                         return;
+                    }
                     ConnectWifi(input.getText().toString());
                 });
 
-                alert.setNegativeButton("Cancel", (dialog, whichButton) -> currentAlert = null);
+                alert.setNegativeButton("Cancel", (dialog, whichButton) -> {
+                    currentAlert = null;
+                    stopAnimation();
+                });
 
                 currentAlert = alert.show();
             } else {
@@ -231,7 +236,7 @@ public class NoRVConnect extends AppCompatActivity {
         public void run() {
             if(animTick >= 0) {
                 animTick ++;
-                if(animTick > 30) {
+                if(animTick > NoRVConst.Animation_Max_Limit) {
                     stopAnimation();
 
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

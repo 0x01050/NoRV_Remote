@@ -25,7 +25,6 @@ public class NoRVApi {
     final private AsyncHttpClient checkClient;
     final private AsyncHttpClient controlClient;
     final private AsyncHttpClient routerClient;
-    final private AsyncHttpClient googleClient;
 
     private NoRVApi() {
         checkClient = new AsyncHttpClient();
@@ -40,9 +39,6 @@ public class NoRVApi {
         routerClient = new AsyncHttpClient();
         routerClient.addHeader("Accept", "application/json");
         routerClient.setTimeout(15000);
-
-        googleClient = new AsyncHttpClient();
-        googleClient.setEnableRedirects(true);
     }
 
     public interface StatusListener {
@@ -153,14 +149,15 @@ public class NoRVApi {
 
     public void checkRouterInternet(final RouterListener listener) {
         try {
-            googleClient.get(NoRVConst.Router_Internet_Check_Url, new AsyncHttpResponseHandler() {
+            checkClient.get(BuildConfig.CLIENT_SERVER + "/getInternet", new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     try {
-                        if(statusCode == 200)
+                        String resp = new String(responseBody, StandardCharsets.UTF_8);
+                        if("True".equals(resp))
                             listener.onSuccess(null);
                         else
-                            listener.onFailure(new String(responseBody, StandardCharsets.UTF_8));
+                            listener.onFailure("Not Connected");
                     } catch (Exception e) {
                         e.printStackTrace();
                         listener.onFailure("Invalid Response");
@@ -172,6 +169,7 @@ public class NoRVApi {
                     error.printStackTrace();
                     listener.onFailure("Network Failure");
                 }
+
             });
         } catch (Exception e) {
             e.printStackTrace();

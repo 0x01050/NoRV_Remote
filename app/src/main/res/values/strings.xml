@@ -34,7 +34,7 @@
     <string name="yes_title">Yes</string>
     <string name="no_title">No</string>
     <string name="loading_title">Checking Router …</string>
-    <string name="connect_title">You are not connected to the NoRV Server.\nTap and connect to the connection below.</string>
+    <string name="connect_title">Make sure NoRV-Center is plugged in and turned on then connect to NoRV-Center.</string>
     <string name="connect_button_title">Tap here to connect to NoRV-Center</string>
     <string name="internet_title">NoRV-Center is not connected to the internet!\nPlease select a Wifi connection.</string>
     <string name="internet_button_title">Tap here to connect to the Internet</string>

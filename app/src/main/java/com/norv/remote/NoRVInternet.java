@@ -208,7 +208,7 @@ public class NoRVInternet extends AppCompatActivity {
     final Runnable checkRouterInternet = () -> {
         if(animTick >= 0) {
             animTick ++;
-            if(animTick > 30) {
+            if(animTick > NoRVConst.Animation_Max_Limit) {
                 stopAnimation();
             }
         }

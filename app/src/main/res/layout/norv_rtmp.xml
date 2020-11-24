@@ -95,4 +95,22 @@
         app:textColor="#FFFFFF"
         app:textSize="35" />
 
+    <com.example.kloadingspin.KLoadingSpin
+        android:id="@+id/norv_connect_spin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundColor="#AA008DFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:primarySpinnerColor="#555555"
+        app:rotationSpeedInMs="3000"
+        app:secondarySpinnerColor="#FF9800"
+        app:text="Connecting ..."
+        app:textColor="#FFFFFF"
+        app:textSize="50" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

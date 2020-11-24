@@ -1,14 +1,20 @@
 package com.norv.remote;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -23,10 +29,13 @@ import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 
 import com.example.kloadingspin.KLoadingSpin;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class NoRVRTMP extends Service {
     private WindowManager mWindowManager;
@@ -36,6 +45,9 @@ public class NoRVRTMP extends Service {
     final private static int RIGHTMOST = 100000;
 
     private KLoadingSpin pauseSpin;
+
+    KLoadingSpin connectSpin;
+    int animTick = -1;
 
     @Nullable
     @Override
@@ -87,6 +99,10 @@ public class NoRVRTMP extends Service {
             pauseSpin = mFloatingView.findViewById(R.id.norv_rtmp_pause_spin);
             pauseSpin.startAnimation();
             pauseSpin.stopAnimation();
+
+            connectSpin = mFloatingView.findViewById(R.id.norv_connect_spin);
+            connectSpin.startAnimation();
+            connectSpin.stopAnimation();
 
             isRunning = true;
             handler.postDelayed(checkStatus, NoRVConst.CheckStatusInterval);
@@ -181,10 +197,22 @@ public class NoRVRTMP extends Service {
     final Runnable checkRouterLive = new Runnable() {
         @Override
         public void run() {
+            if(animTick >= 0) {
+                animTick ++;
+                if(animTick > NoRVConst.Animation_Max_Limit) {
+                    stopAnimation();
+
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove(NoRVConst.Router_PWD_Key);
+                    editor.apply();
+                }
+            }
+
             WifiManager wifiManager = (WifiManager) NoRVRTMP.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
             if(!wifiManager.isWifiEnabled()) {
                 Log.e("NoRV Router Live", "Wifi is disabled");
-                gotoConnectScreen();
+                gotoConnectScreenForce();
                 return;
             }
 
@@ -193,13 +221,16 @@ public class NoRVRTMP extends Service {
                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
                     if(!isRunning)
                         return;
+                    stopAnimation();
                     handler.postDelayed(checkRouterInternet, NoRVConst.CheckRouterInternetInterval);
                 }
 
                 @Override
                 public void onFailure(String errorMsg) {
                     Log.e("NoRV Router Live", errorMsg);
-                    gotoConnectScreen();
+                    handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
+                    if(animTick < 0)
+                        gotoConnectScreen();
                 }
             });
         }
@@ -291,6 +322,20 @@ public class NoRVRTMP extends Service {
     }
 
     private void gotoConnectScreen() {
+
+        WifiManager wifiManager = (WifiManager) NoRVRTMP.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String password = sharedPreferences.getString(NoRVConst.Router_PWD_Key, "");
+
+        if(wifiManager.isWifiEnabled() && password != null && !password.isEmpty()) {
+            startAnimation();
+            ConnectWifi(password);
+        }
+        else {
+            gotoConnectScreenForce();
+        }
+    }
+    private void gotoConnectScreenForce() {
         endCamera();
         Intent connectIntent = new Intent(NoRVRTMP.this, NoRVConnect.class);
         connectIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -298,6 +343,68 @@ public class NoRVRTMP extends Service {
                 | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(connectIntent);
         stopSelf();
+    }
+
+    private void ConnectWifi(String password) {
+        WifiConfiguration conf = new WifiConfiguration();
+        conf.SSID = "\"" + NoRVConst.Router_SSID + "\"";
+        conf.preSharedKey = "\"" + password + "\"";
+
+        WifiManager wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.addNetwork(conf);
+        ConnectToNetworkWEP(password);
+    }
+
+    public void ConnectToNetworkWEP(String password) {
+        try {
+            WifiManager wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            WifiInfo cNet = wifiManager.getConnectionInfo();
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+                boolean connected = false;
+                for( WifiConfiguration i : list ) {
+                    if(i.SSID != null && i.SSID.equals("\"" + NoRVConst.Router_SSID + "\"")) {
+                        Log.e("NoRV Router Now", i.SSID);
+                        if(cNet != null && cNet.getNetworkId() != -1)
+                        {
+                            wifiManager.disconnect();
+                            if(cNet.getSSID() != null)
+                                Log.e("NoRV Router Prev", cNet.getSSID());
+                            wifiManager.removeNetwork(cNet.getNetworkId());
+                        }
+                        wifiManager.enableNetwork(i.networkId, true);
+                        wifiManager.reconnect();
+                        connected = true;
+                        break;
+                    }
+                }
+                if(connected) {
+                    //WiFi Connection success, return true
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(NoRVConst.Router_PWD_Key, password);
+                    editor.apply();
+                    return;
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(Arrays.toString(ex.getStackTrace()));
+        }
+        stopAnimation();
+        gotoConnectScreenForce();
+    }
+
+    private void startAnimation() {
+        connectSpin.startAnimation();
+        connectSpin.setIsVisible(true);
+        connectSpin.setVisibility(View.VISIBLE);
+        animTick = 0;
+    }
+
+    private void stopAnimation() {
+        connectSpin.stopAnimation();
+        connectSpin.setVisibility(View.INVISIBLE);
+        animTick = -1;
     }
 
     private void gotoInternetScreen() {

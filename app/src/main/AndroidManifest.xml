@@ -21,12 +21,16 @@
         android:roundIcon="@mipmap/launcher_round"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-<!--        <activity-->
-<!--            android:name=".NoRVLoading"-->
-<!--            android:label="@string/norv_loading_title"-->
-<!--            android:screenOrientation="landscape"-->
-<!--            android:windowSoftInputMode="adjustResize">-->
-<!--        </activity>-->
+        <activity
+            android:name=".NoRVLoading"
+            android:label="@string/norv_loading_title"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".NoRVConnect"
             android:label="@string/norv_connect_title"
@@ -41,12 +45,7 @@
             android:name=".NoRVActivity"
             android:label="@string/norv_activity_title"
             android:screenOrientation="landscape"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".NoRVConfirm"
             android:label="@string/norv_confirm_title"

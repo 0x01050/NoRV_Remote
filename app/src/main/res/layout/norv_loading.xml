@@ -5,30 +5,34 @@
     android:id="@+id/norv_loading_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#037558"
+    android:background="#EEEEEE"
     tools:context=".NoRVLoading">
 
     <ImageView
-        android:id="@+id/loading_icon"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:contentDescription="@string/loading_title"
-        app:layout_constraintBottom_toTopOf="@+id/loading_label"
+        android:layout_marginTop="35dp"
+        android:contentDescription="@string/menu_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@mipmap/launcher" />
 
-    <TextView
-        android:id="@+id/loading_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/loading_title"
-        android:textColor="#FFFFFF"
-        android:textSize="60sp"
-        android:textStyle="bold"
+    <com.example.kloadingspin.KLoadingSpin
+        android:id="@+id/norv_loading_spin"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundColor="#00000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loading_icon" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:primarySpinnerColor="#555555"
+        app:rotationSpeedInMs="3000"
+        app:secondarySpinnerColor="#FF9800"
+        app:text="Connecting ..."
+        app:textColor="#333333"
+        app:textSize="80" />
 </androidx.constraintlayout.widget.ConstraintLayout>

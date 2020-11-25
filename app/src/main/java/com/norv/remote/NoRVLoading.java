@@ -1,9 +1,9 @@
 package com.norv.remote;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -11,42 +11,82 @@ import android.view.View;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.kloadingspin.KLoadingSpin;
+
 import java.util.ArrayList;
 
 public class NoRVLoading extends AppCompatActivity {
+
+    KLoadingSpin connectSpin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.norv_loading);
-    }
 
-    final Handler handler = new Handler(Looper.getMainLooper());
-    final Runnable checkRouterLive = () -> NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
-        @Override
-        public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
-            handler.postDelayed(checkRouterInternet, NoRVConst.CheckRouterInternetInterval);
+        connectSpin = findViewById(R.id.norv_loading_spin);
+        connectSpin.startAnimation();
+        connectSpin.setIsVisible(true);
+        connectSpin.setVisibility(View.VISIBLE);
+
+
+        WifiManager wifiManager = (WifiManager) NoRVLoading.this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if(!wifiManager.isWifiEnabled()) {
+            gotoConnectScreen();
+            return;
         }
 
-        @Override
-        public void onFailure(String errorMsg) {
-            Log.e("NoRV Router Live", errorMsg);
-            gotoConnect();
-        }
-    });
-    final Runnable checkRouterInternet = () -> {
-    };
+        NoRVApi.getInstance().checkRouterLive(new NoRVApi.RouterListener() {
+            @Override
+            public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+                NoRVApi.getInstance().checkRouterInternet(new NoRVApi.RouterListener() {
+                    @Override
+                    public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
+                        NoRVApi.getInstance().getStatus(new NoRVApi.StatusListener() {
+                            @Override
+                            public void onSuccess(String status, String ignorable, String runningTime, String breaksNumber) {
+                                switch (status) {
+                                    case NoRVConst.LOADED:
+                                        gotoConfirmScreen();
+                                        break;
+                                    case NoRVConst.STARTED:
+                                        gotoRTMPScreen();
+                                        break;
+                                    case NoRVConst.PAUSED:
+                                        gotoPauseScreen();
+                                        break;
+                                    default:
+                                        gotoHomeScreen();
+                                        break;
+                                }
+                            }
 
-    @Override
-    protected void onPause() {
-        handler.removeCallbacks(checkRouterLive);
-        handler.removeCallbacks(checkRouterInternet);
-        super.onPause();
+                            @Override
+                            public void onFailure(String errorMsg) {
+                                Log.e("NoRV Get Status", errorMsg);
+                                gotoHomeScreen();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(String errorMsg) {
+                        Log.e("NoRV Router Internet", errorMsg);
+                        gotoInternetScreen();
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(String errorMsg) {
+                Log.e("NoRV Router Live", errorMsg);
+                gotoConnectScreen();
+            }
+        });
     }
 
     @Override
     protected void onResume() {
-        handler.postDelayed(checkRouterLive, NoRVConst.CheckRouterLiveInterval);
         hideSystemUI();
         super.onResume();
     }
@@ -70,9 +110,38 @@ public class NoRVLoading extends AppCompatActivity {
         }
     }
 
-    private void gotoConnect() {
+    private void gotoConnectScreen() {
         Intent connectIntent = new Intent(NoRVLoading.this, NoRVConnect.class);
         startActivity(connectIntent);
+        finish();
+    }
+
+    private void gotoInternetScreen() {
+        Intent connectIntent = new Intent(NoRVLoading.this, NoRVInternet.class);
+        startActivity(connectIntent);
+        finish();
+    }
+
+    private void gotoHomeScreen() {
+        Intent activityIntent = new Intent(NoRVLoading.this, NoRVActivity.class);
+        startActivity(activityIntent);
+        finish();
+    }
+
+    private void gotoConfirmScreen() {
+        Intent confirmIntent = new Intent(NoRVLoading.this, NoRVConfirm.class);
+        startActivity(confirmIntent);
+        finish();
+    }
+
+    private void gotoRTMPScreen() {
+        startService(new Intent(NoRVLoading.this, NoRVRTMP.class));
+        finish();
+    }
+
+    private void gotoPauseScreen() {
+        Intent pauseIntent = new Intent(NoRVLoading.this, NoRVPause.class);
+        startActivity(pauseIntent);
         finish();
     }
 }

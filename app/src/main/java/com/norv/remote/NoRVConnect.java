@@ -38,6 +38,7 @@ public class NoRVConnect extends AppCompatActivity {
     TextView connectButton;
     KLoadingSpin connectSpin;
     int animTick = -1;
+    long animStart = 0;
     AlertDialog currentAlert = null;
 
     @Override
@@ -106,12 +107,14 @@ public class NoRVConnect extends AppCompatActivity {
         connectSpin.setIsVisible(true);
         connectSpin.setVisibility(View.VISIBLE);
         animTick = 0;
+        animStart = System.currentTimeMillis();
     }
 
     private void stopAnimation() {
         connectSpin.stopAnimation();
         connectSpin.setVisibility(View.INVISIBLE);
         animTick = -1;
+        animStart = 0;
     }
 
     private Boolean permissionsGranted() {
@@ -236,7 +239,7 @@ public class NoRVConnect extends AppCompatActivity {
         public void run() {
             if(animTick >= 0) {
                 animTick ++;
-                if(animTick > NoRVConst.Animation_Max_Limit) {
+                if(animTick > NoRVConst.Animation_Max_Count || (System.currentTimeMillis() - animStart) > NoRVConst.Animation_Max_Time) {
                     stopAnimation();
 
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

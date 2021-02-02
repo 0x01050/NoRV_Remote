@@ -30,6 +30,7 @@ public class NoRVApi {
         checkClient = new AsyncHttpClient();
         checkClient.addHeader("Accept", "application/json");
         checkClient.setTimeout(2000);
+        checkClient.setMaxRetriesAndTimeout(1, 2000);
 
 
         controlClient = new AsyncHttpClient();

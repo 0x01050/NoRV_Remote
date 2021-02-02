@@ -22,6 +22,6 @@ public class NoRVConst {
     final public static String Router_Default_Device = "radio1";
     final public static String Router_Default_Encrypt = "psk2";
 
-    final public static int Animation_Max_Count = 10;
-    final public static long Animation_Max_Time = 60 * 1000;
+    final public static int Animation_Max_Count = 5;
+    final public static long Animation_Max_Time = 20 * 1000;
 }

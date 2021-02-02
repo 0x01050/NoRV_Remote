@@ -137,6 +137,8 @@ public class NoRVInternet extends AppCompatActivity {
                                 return;
                             if (pwdInput.getText().toString().isEmpty())
                                 return;
+                            stopAnimation();
+                            startAnimation();
                             NoRVApi.getInstance().joinRouter(router.ssid, router.mac, router.channel, router.caps, pwdInput.getText().toString(), new NoRVApi.RouterListener() {
                                 @Override
                                 public void onSuccess(ArrayList<NoRVApi.RouterModel> routers) {
